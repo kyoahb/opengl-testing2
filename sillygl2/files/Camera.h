@@ -15,7 +15,7 @@ public:
 	Camera();
 	void changeDirection(glm::vec3 changeDirection);
 
-	void move(std::string way);
+	void move(std::string way, float deltaTime);
 
 private:
 	glm::vec3 cameraFront; // Position always in front

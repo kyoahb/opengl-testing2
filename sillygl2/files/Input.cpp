@@ -18,49 +18,6 @@ InputManager::InputManager(Camera* camera, ObjectManager* objManager) : globalCa
 		std::cerr << "Error: globalCamera is null" << std::endl;
 	}
 
-	Key forward = Key(GLFW_KEY_W);
-	forward.holdFunction = [this]() { globalCamera->move("forward"); };
-	addKey(forward);
-
-	Key left = Key(GLFW_KEY_A);
-	left.holdFunction = [this]() { globalCamera->move("left"); };
-	addKey(left);
-
-	Key back = Key(GLFW_KEY_S);
-	back.holdFunction = [this]() { globalCamera->move("back"); };
-	addKey(back);
-
-	Key right = Key(GLFW_KEY_D);
-	right.holdFunction = [this]() { globalCamera->move("right"); };
-	addKey(right);
-
-	Key addCube = Key(GLFW_KEY_E);
-	addCube.pressFunction = [this]() {
-		objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
-		};
-	addKey(addCube);
-
-	Key rotateCubes = Key(GLFW_KEY_Q);
-	rotateCubes.holdFunction = [this]() {
-		objectManager->rotateObjectsR(objectManager->getObjectListByName("cube"), (float)deltaTime * glm::vec3(360.0f, 0.0f, 0.0f));
-		};
-	addKey(rotateCubes);
-
-	Key scaleCubes = Key(GLFW_KEY_R);
-	scaleCubes.pressFunction = [this]() {
-		for (auto& object : objectManager->getObjectListByName("cube")) {
-			object->scale(glm::vec3(2.0f, 2.0f, 2.0f));
-		}
-		};
-	addKey(scaleCubes);
-
-	Key moveCube = Key(GLFW_KEY_T);
-	moveCube.pressFunction = [this]() {
-		GameObject* c = objectManager->getObjectByName("cube");
-		c->move(glm::vec3(0.0f, 0.0f, 1.0f));
-		};
-	addKey(moveCube);
-
 }
 
 void InputManager::addKey(Key key) {

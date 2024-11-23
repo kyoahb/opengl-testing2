@@ -8,7 +8,7 @@
 #include "Renderer.h"
 #include "ObjectManager.h"
 #include "ScriptManager.h"
-#include "example.h"
+#include "control.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -61,7 +61,7 @@ int main() {
     Renderer renderer(&objectManager, SCR_WIDTH, SCR_HEIGHT);
     renderer.setCamera(&globalCamera);
 
-    scriptManager.registerScript(new ExampleScript());
+    scriptManager.registerScript(new ControlScript());
 
     // Start scripts
     scriptManager.startScripts(&inputManager, &objectManager, &globalCamera, &renderer);

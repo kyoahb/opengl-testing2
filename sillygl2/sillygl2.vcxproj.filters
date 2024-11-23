@@ -80,7 +80,7 @@
     <ClInclude Include="files\Useful.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gamescripts\example.h">
+    <ClInclude Include="gamescripts\control.h">
       <Filter>GameScripts</Filter>
     </ClInclude>
   </ItemGroup>

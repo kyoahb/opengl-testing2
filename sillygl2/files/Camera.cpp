@@ -30,8 +30,9 @@ void Camera::changeDirection(glm::vec3 changeDirection) {
 	view = glm::lookAt(position, position + cameraFront, cameraUp);
 }
 
-void Camera::move(std::string way) {
-	float movementSpeed = 0.1f;
+void Camera::move(std::string way, float deltaTime) {
+	float movementSpeed = 5.0f;
+	movementSpeed *= deltaTime;
 
 	glm::vec3 change = glm::vec3(0.0f, 0.0f, 0.0f);
 	if (way == "forward") {
