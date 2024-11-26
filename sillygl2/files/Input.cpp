@@ -1,6 +1,6 @@
 #include "Input.h"
 
-Key::Key(int keyCode) : keyCode(keyCode), pressFunction([]() {}), holdFunction([]() {}) {}
+Key::Key(int keyCode) : keyCode(keyCode), pressFunction([]() {}), holdFunction([]() {}), releaseFunction([]() {}) {}
 
 void Key::press() {
 	isHeld = true;
@@ -11,9 +11,18 @@ void Key::press() {
 
 void Key::release() {
 	isHeld = false;
+	if (releaseFunction) {
+		releaseFunction();
+	}
 }
 
-InputManager::InputManager(Camera* camera, ObjectManager* objManager) : globalCamera(camera), objectManager(objManager) {
+void Mouse::change() {
+	if (changeFunction) {
+		this->changeFunction();
+	}
+}
+
+InputManager::InputManager(Camera* camera, ObjectManager* objManager) : globalCamera(camera), objectManager(objManager), mouseExists(false) {
 	if (globalCamera == nullptr) {
 		std::cerr << "Error: globalCamera is null" << std::endl;
 	}
@@ -39,28 +48,16 @@ void InputManager::key_call(GLFWwindow* window, int key, int scancode, int actio
 }
 
 void InputManager::mouse_call(GLFWwindow* window, double xpos, double ypos) {
-	static double lastX = xpos;
-	static double lastY = ypos;
-	static bool firstMouse = true;
+	if (mouse) {
+		mouse->xPos = xpos;
+		mouse->yPos = ypos;
 
-	if (firstMouse) {
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	double xoffset = xpos - lastX;
-	double yoffset = ypos - lastY;
-
-	lastX = xpos;
-	lastY = ypos;
-
-	float sensitivity = 0.05f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	globalCamera->changeDirection(glm::vec3(yoffset, xoffset, 0.0f));
+		mouse->change();
+	} 
 }
+
+Mouse::Mouse() : xPos(0.0f), yPos(0.0f), lastXPos(0.0f), lastYPos(0.0f), changeFunction([]() {}) {};
+
 
 void InputManager::update(double dTime) {
 	deltaTime = dTime;
@@ -86,3 +83,11 @@ Key* InputManager::getKey(int keyCode) {
 	return nullptr;
 }
 
+Mouse* InputManager::getMouse() {
+	return mouse;
+}
+
+void InputManager::setMouse(Mouse* m) {
+	mouseExists = true;
+	this->mouse = m;
+}

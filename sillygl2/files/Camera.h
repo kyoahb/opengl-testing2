@@ -15,10 +15,12 @@ public:
 	Camera();
 	void changeDirection(glm::vec3 changeDirection);
 
-	void move(std::string way, float deltaTime);
+	void move(glm::vec3 change);
+	void setSpeed(float speed);
 
 private:
 	glm::vec3 cameraFront; // Position always in front
 	glm::vec3 cameraRight; // Position always to the right
 	glm::vec3 cameraUp; // Position always above
+	float speed;
 };

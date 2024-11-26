@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include "Useful.h"
 
-Camera::Camera() {
+Camera::Camera() : speed(5.0f) {
 	position = glm::vec3(0.0f, 0.0f, -3.0f);
 	cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
 	glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -30,30 +30,12 @@ void Camera::changeDirection(glm::vec3 changeDirection) {
 	view = glm::lookAt(position, position + cameraFront, cameraUp);
 }
 
-void Camera::move(std::string way, float deltaTime) {
-	float movementSpeed = 5.0f;
-	movementSpeed *= deltaTime;
-
-	glm::vec3 change = glm::vec3(0.0f, 0.0f, 0.0f);
-	if (way == "forward") {
-		change.z += (float)cos(direction.y * M_PI / 180);
-		change.x += (float)sin(direction.y * M_PI / 180);
-		change.y += (float)sin(-1 * direction.x * M_PI / 180);
-	}
-	else if (way == "back") {
-		change.z -= (float)cos(direction.y * M_PI / 180);
-		change.x -= (float)sin(direction.y * M_PI / 180);
-		change.y -= (float)sin(-1 * direction.x * M_PI / 180);
-	}
-	else if (way == "left") {
-		change.x += (float)cos(-1 * direction.y * M_PI / 180);
-		change.z += (float)sin(-1 * direction.y * M_PI / 180);
-	}
-	else if (way == "right") {
-		change.x -= (float)cos(-1 * direction.y * M_PI / 180);
-		change.z -= (float)sin(-1 * direction.y * M_PI / 180);
-	}
-	position += change * movementSpeed;
+void Camera::move(glm::vec3 change) {
+	position += change;
 
 	view = glm::lookAt(position, position + cameraFront, cameraUp);
+}
+
+void Camera::setSpeed(float speed) {
+	this->speed = speed;
 }

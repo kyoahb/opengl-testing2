@@ -16,6 +16,7 @@ public:
 	bool isHeld = false;
 	std::function<void()> pressFunction;
 	std::function<void()> holdFunction;
+	std::function<void()> releaseFunction;
 
 	Key(int keyCode);
 	void press();
@@ -23,6 +24,18 @@ public:
 
 	// hold functions are managed inside a hold function update within the input manager, run every frame.
 
+};
+
+class Mouse {
+public:
+	double xPos;
+	double yPos;
+	double lastXPos;
+	double lastYPos;
+	std::function<void()> changeFunction = []() {};
+	void change();
+
+	Mouse();
 };
 
 class InputManager {
@@ -34,9 +47,13 @@ public:
 	void update(double dTime);
 	void manageHeldKeys();
 	Key* getKey(int keyCode);
+	Mouse* getMouse();
+	void setMouse(Mouse* mouse);
 private:
 	Camera* globalCamera;
 	ObjectManager* objectManager;
+	Mouse* mouse;
+	bool mouseExists;
 	std::vector<Key> keys;
 	double deltaTime;
 };
