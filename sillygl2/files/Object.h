@@ -1,6 +1,6 @@
 
 #pragma once
-#include "Useful.h"
+#include "Camera.h"
 #include <vector>
 #include <string>
 
@@ -13,6 +13,8 @@ public:
     std::vector<glm::vec3> vertices;
     std::string name;
     std::vector<unsigned int> indices;
+	std::vector<GameObject*> children;
+	Camera* attachedCamera;
 
     GameObject(glm::vec3 pos, std::string handle);
 
@@ -21,4 +23,6 @@ public:
     void scaleInPlace(glm::vec3 scale);
     void scale(glm::vec3 scale);
     void getAABB(glm::vec3& min, glm::vec3& max) const;
+	void attachCamera(Camera* camera);
+	void attachChild(GameObject* child);
 };

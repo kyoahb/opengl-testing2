@@ -9,11 +9,10 @@ class Script {
 public:
     virtual ~Script() = default;
 
-    void initialize(InputManager* inputManager, ObjectManager* objectManager, Camera* camera, Renderer* renderer)
+    void initialize(InputManager* inputManager, ObjectManager* objectManager, Renderer* renderer)
     {
         this->inputManager = inputManager;
         this->objectManager = objectManager;
-        this->camera = camera;
         this->renderer = renderer;
         onStart();
     }
@@ -24,6 +23,5 @@ public:
 protected:
     InputManager* inputManager;
     ObjectManager* objectManager;
-    Camera* camera;
     Renderer* renderer;
 };

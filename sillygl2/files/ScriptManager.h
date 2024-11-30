@@ -16,9 +16,9 @@ public:
         scripts.push_back(script);
     }
 
-    void startScripts(InputManager* inputManager, ObjectManager* objectManager, Camera* camera, Renderer* renderer) {
+    void startScripts(InputManager* inputManager, ObjectManager* objectManager, Renderer* renderer) {
         for (auto& script : scripts) {
-            script->initialize(inputManager, objectManager, camera, renderer);
+            script->initialize(inputManager, objectManager, renderer);
         }
     }
 

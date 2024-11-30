@@ -8,6 +8,8 @@
 #include "Renderer.h"
 #include "ObjectManager.h"
 #include "ScriptManager.h"
+
+// Game Scripts
 #include "control.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -19,9 +21,8 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // load globals
-Camera globalCamera;
 ObjectManager objectManager;
-InputManager inputManager(&globalCamera, &objectManager);
+InputManager inputManager(&objectManager);
 ScriptManager scriptManager;
 
 int main() {
@@ -59,12 +60,11 @@ int main() {
 
     // setup renderer and hook it into input manager (should be moved away to a unity scripting type system later, but for now this is ok)
     Renderer renderer(&objectManager, SCR_WIDTH, SCR_HEIGHT);
-    renderer.setCamera(&globalCamera);
 
     scriptManager.registerScript(new ControlScript());
 
     // Start scripts
-    scriptManager.startScripts(&inputManager, &objectManager, &globalCamera, &renderer);
+    scriptManager.startScripts(&inputManager, &objectManager, &renderer);
 
     double deltaTime = 0.0f;
     double lastFrame = 0.0f;

@@ -22,12 +22,8 @@ void Mouse::change() {
 	}
 }
 
-InputManager::InputManager(Camera* camera, ObjectManager* objManager) : globalCamera(camera), objectManager(objManager), mouseExists(false) {
-	if (globalCamera == nullptr) {
-		std::cerr << "Error: globalCamera is null" << std::endl;
-	}
-
-}
+InputManager::InputManager(ObjectManager* objManager) : 
+	objectManager(objManager), deltaTime(0.0f), mouse(nullptr) {}
 
 void InputManager::addKey(Key key) {
 	keys.emplace_back(key);
@@ -88,6 +84,5 @@ Mouse* InputManager::getMouse() {
 }
 
 void InputManager::setMouse(Mouse* m) {
-	mouseExists = true;
 	this->mouse = m;
 }

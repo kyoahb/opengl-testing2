@@ -40,7 +40,7 @@ public:
 
 class InputManager {
 public:
-	InputManager(Camera* camera, ObjectManager* objManager);
+	InputManager(ObjectManager* objManager);
 	void addKey(Key key);
 	void key_call(GLFWwindow* window, int key, int scancode, int action, int mods);
 	void mouse_call(GLFWwindow* window, double xpos, double ypos);
@@ -50,10 +50,8 @@ public:
 	Mouse* getMouse();
 	void setMouse(Mouse* mouse);
 private:
-	Camera* globalCamera;
 	ObjectManager* objectManager;
 	Mouse* mouse;
-	bool mouseExists;
 	std::vector<Key> keys;
 	double deltaTime;
 };

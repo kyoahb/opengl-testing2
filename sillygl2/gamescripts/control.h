@@ -6,6 +6,13 @@
 class ControlScript : public Script {
 public:
     void onStart() override {
+		camera = new Camera();
+		renderer->setCamera(camera);
+
+		player = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "player");
+		player->attachCamera(camera);
+		objectManager->addObject(player);
+
 		Key forward = Key(GLFW_KEY_W);
 		forward.holdFunction = [this]() { this->movement("forward"); };
 		inputManager->addKey(forward);
@@ -110,13 +117,15 @@ public:
 			change.y -= 1.0f;
 		}
 		glm::vec3 overall = change * speed * (float)dTime;
-		camera->move(overall);
+		player->move(overall);
 	}
 
     void onUpdate(double deltaTime) override {
 		dTime = deltaTime;
     }
 private:
-	double dTime;
+	double dTime = 0.0f;
 	float speed = 5.0f;
+	Camera* camera;
+	GameObject* player;
 };

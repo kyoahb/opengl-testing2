@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string>
 #include "Useful.h"
+
 class Camera
 {
 public:
@@ -13,6 +14,7 @@ public:
 
 	glm::mat4 view = glm::mat4(1.0f);
 	Camera();
+	void updateView();
 	void changeDirection(glm::vec3 changeDirection);
 
 	void move(glm::vec3 change);
@@ -20,7 +22,6 @@ public:
 
 private:
 	glm::vec3 cameraFront; // Position always in front
-	glm::vec3 cameraRight; // Position always to the right
 	glm::vec3 cameraUp; // Position always above
 	float speed;
 };

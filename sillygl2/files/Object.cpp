@@ -3,13 +3,26 @@
 bool objectsUpdated = true; // Define the global variable
 
 GameObject::GameObject(glm::vec3 pos, std::string handle)
-    : position(pos), name(handle), rotation(glm::vec3(0.0f, 0.0f, 0.0f)), vertices({}), indices({}) {}
+    : position(pos), name(handle), rotation(glm::vec3(0.0f, 0.0f, 0.0f)), vertices({}), indices({}), attachedCamera(nullptr), children({}) {}
 
 void GameObject::move(glm::vec3 change) {
+    // Move self
     position += change;
     for (auto& vert : vertices) {
         vert += change;
     }
+
+    // Move camera
+    if (attachedCamera != nullptr) {
+        attachedCamera->position = position;
+        attachedCamera->updateView();
+    }
+
+	// Move children
+	for (auto& child : children) {
+		child->move(change);
+	}
+
     objectsUpdated = true;
 }
 
@@ -49,4 +62,12 @@ void GameObject::getAABB(glm::vec3& min, glm::vec3& max) const {
         min = glm::min(min, vert);
         max = glm::max(max, vert);
     }
+}
+
+void GameObject::attachCamera(Camera* camera) {
+    this->attachedCamera = camera;
+}
+
+void GameObject::attachChild(GameObject* child) {
+	this->children.push_back(child);
 }
