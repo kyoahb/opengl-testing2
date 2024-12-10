@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\bresk\source\repos\sillygl2\sillygl2\include;C:\Users\bresk\source\repos\sillygl2\sillygl2\shaders;C:\Users\bresk\source\repos\sillygl2\sillygl2\files;C:\Users\bresk\source\repos\sillygl2\sillygl2\gamescripts;C:\Users\bresk\source\repos\sillygl2\sillygl2;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\bresk\source\repos\sillygl2\sillygl2\dlls;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\bresk\source\repos\opengl-testing2\sillygl2\dlls;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\bresk\source\repos\opengl-testing2\sillygl2\shaders;C:\Users\bresk\source\repos\opengl-testing2\sillygl2\files;C:\Users\bresk\source\repos\opengl-testing2\sillygl2\gamescripts;C:\Users\bresk\source\repos\opengl-testing2\sillygl2\include;C:\Users\bresk\source\repos\opengl-testing2\sillygl2;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -143,7 +143,15 @@
     <ClCompile Include="files\Script.cpp" />
     <ClCompile Include="files\ScriptManager.cpp" />
     <ClCompile Include="files\Useful.cpp" />
+    <ClCompile Include="include\imgui\imgui.cpp" />
+    <ClCompile Include="include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="include\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="include\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MenuManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="files\Camera.h" />
@@ -156,6 +164,16 @@
     <ClInclude Include="files\Shader_l.h" />
     <ClInclude Include="files\Useful.h" />
     <ClInclude Include="gamescripts\control.h" />
+    <ClInclude Include="include\imgui\imconfig.h" />
+    <ClInclude Include="include\imgui\imgui.h" />
+    <ClInclude Include="include\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="include\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="include\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="include\imgui\imgui_internal.h" />
+    <ClInclude Include="include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="include\imgui\imstb_textedit.h" />
+    <ClInclude Include="include\imgui\imstb_truetype.h" />
+    <ClInclude Include="MenuManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.fs" />

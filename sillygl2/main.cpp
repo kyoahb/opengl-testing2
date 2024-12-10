@@ -1,3 +1,4 @@
+#include "MenuManager.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Useful.h"
@@ -8,7 +9,6 @@
 #include "Renderer.h"
 #include "ObjectManager.h"
 #include "ScriptManager.h"
-
 // Game Scripts
 #include "control.h"
 
@@ -16,7 +16,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-// settings 
+// settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
@@ -42,13 +42,16 @@ int main() {
         glfwTerminate();
         return -1;
     }
+
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // tell GLFW to capture our mouse and keyboard inputs
     glfwSetKeyCallback(window, key_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+    MenuManager menuManager(window);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -74,6 +77,7 @@ int main() {
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+        glfwPollEvents();
         // change deltaTime
         double currentFrame = glfwGetTime();
         frames++;
@@ -86,6 +90,9 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        //menu
+        menuManager.frameStart();
+
         // input
         inputManager.update(deltaTime);
 
@@ -95,16 +102,19 @@ int main() {
         // render
         // ------
         renderer.render();
-        //glBindVertexArray(VAO);
+        
+
+        menuManager.frameEnd();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
-        glfwPollEvents();
         glFlush();
+        
     }
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
+    menuManager.shutdown();
     return 0;
 }
 

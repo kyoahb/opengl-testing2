@@ -14,6 +14,7 @@ class Key {
 public:
 	const int keyCode;
 	bool isHeld = false;
+	bool immortal = false; // If immortal, it cannot be disabled even when INPUT_DISABLED is True.
 	std::function<void()> pressFunction;
 	std::function<void()> holdFunction;
 	std::function<void()> releaseFunction;
@@ -40,6 +41,8 @@ public:
 
 class InputManager {
 public:
+	bool INPUT_DISABLED = false;
+
 	InputManager(ObjectManager* objManager);
 	void addKey(Key key);
 	void key_call(GLFWwindow* window, int key, int scancode, int action, int mods);

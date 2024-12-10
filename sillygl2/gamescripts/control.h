@@ -74,6 +74,13 @@ public:
 			};
 		inputManager->addKey(speedUp);
 
+		Key disableInput = Key(GLFW_KEY_TAB);
+		disableInput.pressFunction = [this]() {
+			inputManager->INPUT_DISABLED = !inputManager->INPUT_DISABLED;
+			};
+		disableInput.immortal = true;
+		inputManager->addKey(disableInput);
+
 		Mouse* m = new Mouse();
 		m->changeFunction = [this, m]() {
 			float sensitivity = 0.05f;

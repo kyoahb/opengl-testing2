@@ -31,6 +31,9 @@ void InputManager::addKey(Key key) {
 
 void InputManager::key_call(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	Key* k = getKey(key);
+	if (INPUT_DISABLED and not k->immortal) {
+		return;
+	}
 	if (k == nullptr) {
 		return;
 	}
@@ -44,6 +47,7 @@ void InputManager::key_call(GLFWwindow* window, int key, int scancode, int actio
 }
 
 void InputManager::mouse_call(GLFWwindow* window, double xpos, double ypos) {
+	if (INPUT_DISABLED) return;
 	if (mouse) {
 		mouse->xPos = xpos;
 		mouse->yPos = ypos;
