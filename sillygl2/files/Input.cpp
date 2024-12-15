@@ -16,22 +16,61 @@ void Key::release() {
 	}
 }
 
-void Mouse::change() {
+Mouse::Mouse(GLFWwindow* window) : window(window), xPos(0.0f), yPos(0.0f), changeFunction([]() {}) {
+	this->setVisibility(false);
+}
+
+void Mouse::change() { // change = moved 
 	if (changeFunction) {
 		this->changeFunction();
 	}
 }
 
-InputManager::InputManager(ObjectManager* objManager) : 
-	objectManager(objManager), deltaTime(0.0f), mouse(nullptr) {}
+void Mouse::setVisibility(bool visible) {
+	if (visible) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	else {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+}
 
-void InputManager::addKey(Key key) {
+InputManager::InputManager(GLFWwindow* window) : 
+	deltaTime(0.0f), mouse(nullptr), window(window) {
+
+	// Store the pointer to this instance in the GLFW window's user pointer
+	glfwSetWindowUserPointer(window, this);
+
+	// Set the static callback functions
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+}
+
+void InputManager::addKey(Key* key) {
 	keys.emplace_back(key);
 }
 
-void InputManager::key_call(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void InputManager::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	// Retrieve the InputManager instance from the GLFW window's user pointer
+	InputManager* inputManager = static_cast<InputManager*>(glfwGetWindowUserPointer(window));
+	if (inputManager) {
+		inputManager->key_call(key, scancode, action, mods);
+	}
+}
+void InputManager::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	// Retrieve the InputManager instance from the GLFW window's user pointer
+	InputManager* inputManager = static_cast<InputManager*>(glfwGetWindowUserPointer(window));
+	if (inputManager) {
+		inputManager->mouse_call(xpos, ypos);
+	}
+}
+
+
+void InputManager::key_call(int key, int scancode, int action, int mods) {
 	Key* k = getKey(key);
-	if (INPUT_DISABLED and not k->immortal) {
+	if (k->disabled) {
 		return;
 	}
 	if (k == nullptr) {
@@ -46,18 +85,15 @@ void InputManager::key_call(GLFWwindow* window, int key, int scancode, int actio
 	}
 }
 
-void InputManager::mouse_call(GLFWwindow* window, double xpos, double ypos) {
-	if (INPUT_DISABLED) return;
+void InputManager::mouse_call(double xpos, double ypos) {
 	if (mouse) {
+		if (mouse->disabled) return;
 		mouse->xPos = xpos;
 		mouse->yPos = ypos;
 
 		mouse->change();
 	} 
 }
-
-Mouse::Mouse() : xPos(0.0f), yPos(0.0f), lastXPos(0.0f), lastYPos(0.0f), changeFunction([]() {}) {};
-
 
 void InputManager::update(double dTime) {
 	deltaTime = dTime;
@@ -66,9 +102,9 @@ void InputManager::update(double dTime) {
 
 void InputManager::manageHeldKeys() {
 	for (auto& key : keys) {
-		if (key.isHeld) {
-			if (key.holdFunction) {
-				key.holdFunction();
+		if (key->isHeld) {
+			if (key->holdFunction) {
+				key->holdFunction();
 			}
 		}
 	}
@@ -76,11 +112,15 @@ void InputManager::manageHeldKeys() {
 
 Key* InputManager::getKey(int keyCode) {
 	for (auto& key : keys) {
-		if (key.keyCode == keyCode) {
-			return &key;
+		if (key->keyCode == keyCode) {
+			return key;
 		}
 	}
 	return nullptr;
+}
+
+std::vector<Key*>* InputManager::getKeys() {
+	return &keys;
 }
 
 Mouse* InputManager::getMouse() {

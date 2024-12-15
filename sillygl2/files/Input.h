@@ -9,12 +9,11 @@
 #include "Object.h"
 #include "ObjectManager.h"
 #include "Useful.h"
-
 class Key {
 public:
 	const int keyCode;
 	bool isHeld = false;
-	bool immortal = false; // If immortal, it cannot be disabled even when INPUT_DISABLED is True.
+	bool disabled = false;
 	std::function<void()> pressFunction;
 	std::function<void()> holdFunction;
 	std::function<void()> releaseFunction;
@@ -31,30 +30,35 @@ class Mouse {
 public:
 	double xPos;
 	double yPos;
-	double lastXPos;
-	double lastYPos;
+	bool disabled = false;
 	std::function<void()> changeFunction = []() {};
 	void change();
+	void setVisibility(bool visible);
 
-	Mouse();
+	Mouse(GLFWwindow* window);
+private:
+	GLFWwindow* window;
 };
 
 class InputManager {
 public:
-	bool INPUT_DISABLED = false;
-
-	InputManager(ObjectManager* objManager);
-	void addKey(Key key);
-	void key_call(GLFWwindow* window, int key, int scancode, int action, int mods);
-	void mouse_call(GLFWwindow* window, double xpos, double ypos);
+	InputManager(GLFWwindow* window);
+	void addKey(Key* key);
 	void update(double dTime);
-	void manageHeldKeys();
-	Key* getKey(int keyCode);
-	Mouse* getMouse();
 	void setMouse(Mouse* mouse);
+	Key* getKey(int keyCode);
+	std::vector<Key*>* getKeys();
+	Mouse* getMouse();
+
 private:
-	ObjectManager* objectManager;
+	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods); // static so it can be passed to glfw
+	static void mouse_callback(GLFWwindow* window, double xpos, double ypos); // static so it can be passed to glfw
+	void key_call(int key, int scancode, int action, int mods);
+	void mouse_call(double xpos, double ypos);
+	void manageHeldKeys();
+
+	GLFWwindow* window;
 	Mouse* mouse;
-	std::vector<Key> keys;
+	std::vector<Key*> keys;
 	double deltaTime;
 };

@@ -9,6 +9,7 @@
 #include "Renderer.h"
 #include "ObjectManager.h"
 #include "ScriptManager.h"
+#include "Manager.h"
 // Game Scripts
 #include "control.h"
 
@@ -20,10 +21,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// load globals
-ObjectManager objectManager;
-InputManager inputManager(&objectManager);
-ScriptManager scriptManager;
 
 int main() {
     // glfw: initialize and configure
@@ -45,29 +42,26 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    // tell GLFW to capture our mouse and keyboard inputs
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-    MenuManager menuManager(window);
-
     // glad: load all OpenGL function pointers
-    // ---------------------------------------
+// ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
-    // setup renderer and hook it into input manager (should be moved away to a unity scripting type system later, but for now this is ok)
+    // load globals
+    ObjectManager objectManager;
+    InputManager inputManager(window);
+    ScriptManager scriptManager;
+    MenuManager menuManager(window);
     Renderer renderer(&objectManager, SCR_WIDTH, SCR_HEIGHT);
+
+    Manager::getInstance().initialize(&inputManager, &objectManager, &renderer, &menuManager, window);
 
     scriptManager.registerScript(new ControlScript());
 
     // Start scripts
-    scriptManager.startScripts(&inputManager, &objectManager, &renderer);
+    scriptManager.startScripts();
 
     double deltaTime = 0.0f;
     double lastFrame = 0.0f;
@@ -116,17 +110,6 @@ int main() {
     glfwTerminate();
     menuManager.shutdown();
     return 0;
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	inputManager.key_call(window, key, scancode, action, mods);
-}
-
-// send mouse callback into inputManager
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-	inputManager.mouse_call(window, xpos, ypos);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

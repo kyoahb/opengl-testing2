@@ -8,8 +8,8 @@ MenuManager::MenuManager(GLFWwindow* window) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	ImGui::StyleColorsDark();
-	io.WantCaptureKeyboard = true;
-	io.WantCaptureMouse = true;
+	io.WantCaptureKeyboard = false;
+	io.WantCaptureMouse = false;
 	// Setup Platform/Renderer backends
 	ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
@@ -19,7 +19,9 @@ void MenuManager::frameStart() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
+	if (showDemoWindow) {
+		ImGui::ShowDemoWindow();
+	}
 }
 
 void MenuManager::frameEnd() {

@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\Users\bresk\source\repos\opengl-testing2\sillygl2\dlls;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\bresk\source\repos\opengl-testing2\sillygl2\shaders;C:\Users\bresk\source\repos\opengl-testing2\sillygl2\files;C:\Users\bresk\source\repos\opengl-testing2\sillygl2\gamescripts;C:\Users\bresk\source\repos\opengl-testing2\sillygl2\include;C:\Users\bresk\source\repos\opengl-testing2\sillygl2;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\bresk\source\repos\sillygl2\sillygl2\dlls;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\bresk\source\repos\sillygl2\sillygl2\include;C:\Users\bresk\source\repos\sillygl2\sillygl2\gamescripts;C:\Users\bresk\source\repos\sillygl2\sillygl2\files;C:\Users\bresk\source\repos\sillygl2\sillygl2\shaders;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -151,6 +151,7 @@
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Manager.cpp" />
     <ClCompile Include="MenuManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +174,7 @@
     <ClInclude Include="include\imgui\imstb_rectpack.h" />
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
+    <ClInclude Include="Manager.h" />
     <ClInclude Include="MenuManager.h" />
   </ItemGroup>
   <ItemGroup>

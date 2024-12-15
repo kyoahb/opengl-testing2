@@ -1,19 +1,13 @@
 #pragma once
 
-#include "ObjectManager.h"
-#include "Input.h"
-#include "Camera.h"
-#include "Renderer.h"
+#include "Manager.h"
 
 class Script {
 public:
     virtual ~Script() = default;
 
-    void initialize(InputManager* inputManager, ObjectManager* objectManager, Renderer* renderer)
+    void initialize()
     {
-        this->inputManager = inputManager;
-        this->objectManager = objectManager;
-        this->renderer = renderer;
         onStart();
     }
 
@@ -21,7 +15,4 @@ public:
     virtual void onUpdate(double deltaTime) = 0;
 
 protected:
-    InputManager* inputManager;
-    ObjectManager* objectManager;
-    Renderer* renderer;
 };

@@ -6,9 +6,12 @@
 
 class MenuManager {
 public:
+	bool showDemoWindow = false;
 	MenuManager(GLFWwindow* window);
+
 	void frameStart();
 	void frameEnd();
 	void shutdown();
+
 
 };

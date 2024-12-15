@@ -5,7 +5,17 @@
 
 class ControlScript : public Script {
 public:
+	double lastXPos = 0.0f;
+	double lastYPos = 0.0f;
+	bool inputDisabled = false;
     void onStart() override {
+		Renderer* renderer = Manager::getInstance().getRenderer();
+		ObjectManager* objectManager = Manager::getInstance().getObjectManager();
+		InputManager* inputManager = Manager::getInstance().getInputManager();
+		MenuManager* menuManager = Manager::getInstance().getMenuManager();
+		GLFWwindow* window = Manager::getInstance().getWindow();
+
+
 		camera = new Camera();
 		renderer->setCamera(camera);
 
@@ -13,84 +23,109 @@ public:
 		player->attachCamera(camera);
 		objectManager->addObject(player);
 
-		Key forward = Key(GLFW_KEY_W);
-		forward.holdFunction = [this]() { this->movement("forward"); };
+		Key* forward = new Key(GLFW_KEY_W);
+		forward->holdFunction = [this]() { this->movement("forward"); };
 		inputManager->addKey(forward);
 
-		Key left = Key(GLFW_KEY_A);
-		left.holdFunction = [this]() { this->movement("left"); };
+		Key* left = new Key(GLFW_KEY_A);
+		left->holdFunction = [this]() { this->movement("left"); };
 		inputManager->addKey(left);
 
-		Key back = Key(GLFW_KEY_S);
-		back.holdFunction = [this]() { this->movement("back"); };
+		Key* back = new Key(GLFW_KEY_S);
+		back->holdFunction = [this]() { this->movement("back"); };
 		inputManager->addKey(back);
 
-		Key right = Key(GLFW_KEY_D);
-		right.holdFunction = [this]() { this->movement("right"); };
+		Key* right = new Key(GLFW_KEY_D);
+		right->holdFunction = [this]() { this->movement("right"); };
 		inputManager->addKey(right);
 
-		Key down = Key(GLFW_KEY_LEFT_SHIFT);
-		down.holdFunction = [this]() { this->movement("down"); };
+		Key* down = new Key(GLFW_KEY_LEFT_SHIFT);
+		down->holdFunction = [this]() { this->movement("down"); };
 		inputManager->addKey(down);
 
-		Key up = Key(GLFW_KEY_SPACE);
-		up.holdFunction = [this]() { this->movement("up"); };
+		Key* up = new Key(GLFW_KEY_SPACE);
+		up->holdFunction = [this]() { this->movement("up"); };
 		inputManager->addKey(up);
 
 
-		Key addCube = Key(GLFW_KEY_E);
-		addCube.holdFunction = [this]() {
+		Key* addCube = new Key(GLFW_KEY_E);
+		addCube->holdFunction = [this, objectManager]() {
 			objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
 			};
 		inputManager->addKey(addCube);
 
-		Key rotateCubes = Key(GLFW_KEY_Q);
-		rotateCubes.holdFunction = [this]() {
+		Key* rotateCubes = new Key(GLFW_KEY_Q);
+		rotateCubes->holdFunction = [this, objectManager]() {
 			objectManager->rotateObjectsR(objectManager->getObjectListByName("cube"), (float)dTime * glm::vec3(360.0f, 0.0f, 0.0f));
 			};
 		inputManager->addKey(rotateCubes);
 
-		Key scaleCubes = Key(GLFW_KEY_R);
-		scaleCubes.pressFunction = [this]() {
+		Key* scaleCubes = new Key(GLFW_KEY_R);
+		scaleCubes->pressFunction = [this, objectManager]() {
 			for (auto& object : objectManager->getObjectListByName("cube")) {
 				object->scale(glm::vec3(2.0f, 2.0f, 2.0f));
 			}
 			};
 		inputManager->addKey(scaleCubes);
 
-		Key moveCube = Key(GLFW_KEY_T);
-		moveCube.pressFunction = [this]() {
+		Key* moveCube = new Key(GLFW_KEY_T);
+		moveCube->pressFunction = [this, objectManager]() {
 			GameObject* c = objectManager->getObjectByName("cube");
 			c->move(glm::vec3(0.0f, 0.0f, 1.0f));
 			};
 		inputManager->addKey(moveCube);
 
-		Key speedUp = Key(GLFW_KEY_LEFT_CONTROL);
-		speedUp.pressFunction = [this]() {
+		Key* speedUp = new Key(GLFW_KEY_LEFT_CONTROL);
+		speedUp->pressFunction = [this]() {
 			speed = 10.0f;
 			};
-		speedUp.releaseFunction = [this]() {
+		speedUp->releaseFunction = [this]() {
 			speed = 5.0f;
 			};
 		inputManager->addKey(speedUp);
 
-		Key disableInput = Key(GLFW_KEY_TAB);
-		disableInput.pressFunction = [this]() {
-			inputManager->INPUT_DISABLED = !inputManager->INPUT_DISABLED;
+		Key* disableInput = new Key(GLFW_KEY_TAB);
+		disableInput->pressFunction = [this, inputManager, menuManager]() {
+			this->inputDisabled = !this->inputDisabled;
+			if (this->inputDisabled) {
+				inputManager->getMouse()->disabled = true;
+                for (auto& key : *(inputManager->getKeys())) {
+					key->isHeld = false;
+					
+					if (key->keyCode == GLFW_KEY_TAB) { // Don't disable the tab key
+						continue;
+					}
+					else {
+						key->disabled = true;
+					}
+				}
+				menuManager->showDemoWindow = true;
+				inputManager->getMouse()->setVisibility(true);
+			}
+			else {
+				inputManager->getMouse()->disabled = false;
+				for (auto& key : *(inputManager->getKeys())) {
+					key->disabled = false;
+				}
+				menuManager->showDemoWindow = false;
+				inputManager->getMouse()->setVisibility(false);
+			}
 			};
-		disableInput.immortal = true;
 		inputManager->addKey(disableInput);
 
-		Mouse* m = new Mouse();
+
+		lastXPos = 0.0f;
+		lastYPos = 0.0f;
+		Mouse* m = new Mouse(window);
 		m->changeFunction = [this, m]() {
 			float sensitivity = 0.05f;
 
-			double xoffset = (m->xPos - m->lastXPos) * sensitivity;
-			double yoffset = (m->yPos - m->lastYPos) * sensitivity;
+			double xoffset = (m->xPos - this->lastXPos) * sensitivity;
+			double yoffset = (m->yPos - this->lastYPos) * sensitivity;
 
 			camera->changeDirection(glm::vec3(static_cast<float>(yoffset), static_cast<float>(xoffset), 0.0f));
-			m->lastXPos = m->xPos;
-			m->lastYPos = m->yPos;
+			this->lastXPos = m->xPos;
+			this->lastYPos = m->yPos;
 			};
 		inputManager->setMouse(m);
 
