@@ -19,7 +19,7 @@ public:
 		camera = new Camera();
 		renderer->setCamera(camera);
 
-		player = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "player");
+		player = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "player", false);
 		player->attachCamera(camera);
 		objectManager->addObject(player);
 
@@ -54,26 +54,23 @@ public:
 			};
 		inputManager->addKey(addCube);
 
+		Key* add2250Cubes = new Key(GLFW_KEY_P);
+		add2250Cubes->pressFunction = [this, objectManager]() {
+			for (int i = 0; i < 2250; i++) objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
+			};
+		inputManager->addKey(add2250Cubes);
+
+		Key* removeCube = new Key(GLFW_KEY_F);
+		removeCube->holdFunction = [this, objectManager]() {
+			objectManager->destroyObject(objectManager->getObjectByName("cube"));
+			};
+		inputManager->addKey(removeCube);
+
 		Key* rotateCubes = new Key(GLFW_KEY_Q);
 		rotateCubes->holdFunction = [this, objectManager]() {
 			objectManager->rotateObjectsR(objectManager->getObjectListByName("cube"), (float)dTime * glm::vec3(360.0f, 0.0f, 0.0f));
 			};
 		inputManager->addKey(rotateCubes);
-
-		Key* scaleCubes = new Key(GLFW_KEY_R);
-		scaleCubes->pressFunction = [this, objectManager]() {
-			for (auto& object : objectManager->getObjectListByName("cube")) {
-				object->scale(glm::vec3(2.0f, 2.0f, 2.0f));
-			}
-			};
-		inputManager->addKey(scaleCubes);
-
-		Key* moveCube = new Key(GLFW_KEY_L);
-		moveCube->pressFunction = [this, objectManager]() {
-			GameObject* c = objectManager->getObjectByName("cube");
-			c->move(glm::vec3(0.0f, 0.0f, 1.0f));
-			};
-		inputManager->addKey(moveCube);
 
 		Key* speedUp = new Key(GLFW_KEY_LEFT_CONTROL);
 		speedUp->pressFunction = [this]() {

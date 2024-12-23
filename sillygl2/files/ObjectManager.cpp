@@ -1,9 +1,7 @@
 #include "ObjectManager.h"
 
 ObjectManager::ObjectManager() : storedRMatrix(glm::mat4(1.0f)), storedRotation(false) {
-    GameObject* origin = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "origin");
-    origin->vertices = { glm::vec3(0.0f, 0.0f, 0.0f) };
-    origin->indices = { 0 };
+    GameObject* origin = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "origin", false);
     objects.push_back(origin);
 }
 
@@ -45,6 +43,22 @@ std::vector<GameObject*> ObjectManager::getObjectListByName(std::string name) {
         }
     }
     return objectsWithName;
+}
+
+std::vector<GameObject*> ObjectManager::getObjectsTransformedThisFrame() {
+	std::vector<GameObject*> transformedObjectsThisFrame = {};
+	for (auto& object : objects) {
+		if (object->transformedThisFrame) {
+			transformedObjectsThisFrame.push_back(object);
+		}
+	}
+	return transformedObjectsThisFrame;
+}
+
+bool ObjectManager::anyTransformationsHappened() {
+	bool temp = anyTransformationsThisFrame;
+	anyTransformationsThisFrame = false;
+    return temp;
 }
 
 void ObjectManager::rotateObjectsR(std::vector<GameObject*> objects, glm::vec3 rotation) {
@@ -91,7 +105,7 @@ void ObjectManager::addCube(float width, float height, float depth, glm::vec3 bo
 
     glm::vec3 center = bottomLeft + glm::vec3(width / 2, height / 2, depth / 2);
 
-    GameObject* cube = new GameObject(center, name);
+    GameObject* cube = new GameObject(center, name, true);
     cube->vertices = vertices;
     cube->indices = indices;
     addObject(cube);
@@ -109,7 +123,7 @@ void ObjectManager::addTriangle(glm::vec3 left, glm::vec3 right, glm::vec3 top, 
 
 	glm::vec3 center = (left + right + top) / 3.0f;
 
-	GameObject* triangle = new GameObject(center, name);
+	GameObject* triangle = new GameObject(center, name, true);
 	triangle->vertices = vertices;
 	triangle->indices = indices;
 	addObject(triangle);

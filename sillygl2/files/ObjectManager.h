@@ -11,8 +11,12 @@ public:
     void addObject(GameObject* object);
     void destroyObject(GameObject* object);
     bool checkCollision(GameObject* object1, GameObject* object2);
+
     GameObject* getObjectByName(std::string name);
     std::vector<GameObject*> getObjectListByName(std::string name);
+	std::vector<GameObject*> getObjectsTransformedThisFrame();
+	bool anyTransformationsHappened(); 
+
     void rotateObjectsR(std::vector<GameObject*> objects, glm::vec3 rotation);
     std::vector<GameObject*>* getObjects();
     void addCube(float width, float height, float depth, glm::vec3 bottomLeft, std::string name);

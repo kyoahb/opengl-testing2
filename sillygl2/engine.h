@@ -61,7 +61,7 @@ public:
 			ImGui::Text("This is a debug menu");
 			if (ImGui::CollapsingHeader("Objects")) {
 				std::vector<GameObject*>* objects_ptr = objectManager->getObjects();
-				ImGui::Text("This is a debug menu");
+                ImGui::Text("Number of Objects: %zu", objectManager->getObjects()->size());
 
 			}
 

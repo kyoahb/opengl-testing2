@@ -1,6 +1,4 @@
-#ifndef MANAGER_H
-#define MANAGER_H
-
+#pragma once
 #include "Input.h"
 #include "ObjectManager.h"
 #include "Renderer.h"
@@ -32,5 +30,3 @@ private:
     MenuManager* menuManager;
     GLFWwindow* window;
 };
-
-#endif // MANAGER_H
