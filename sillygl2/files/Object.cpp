@@ -34,7 +34,9 @@ void GameObject::move(glm::vec3 change) {
     setTransformedThisFrame();
 }
 
-void GameObject::rotate(glm::mat4 rotationMatrix) {
+void GameObject::rotate(glm::mat4 rotationMatrix, glm::vec3 _rotation) {
+    rotation = vec3Clamp(rotation + _rotation, 360.0f);
+    rotation = vec3Clamp(rotation, -360.0f);
     for (auto& vert : vertices) {
         glm::vec3 translated = vert - position;
         glm::vec4 simd_translated = glm::vec4(translated, 1.0f);

@@ -55,13 +55,27 @@ public:
 		Menu* debugMenu = new Menu([debugMenu, objectManager]() {
 			ImGui::Begin("Debug Menu");
 			ImGui::SetWindowSize(ImVec2(300, 300));
-
 			std::vector<GameObject*>* objects_ptr = objectManager->getObjects();
-			std::vector<GameObject*> rendered_objects = {};
+			std::vector<GameObject*> objects = *(objects_ptr);
 			ImGui::Text("This is a debug menu");
-			if (ImGui::CollapsingHeader("Objects")) {
-				std::vector<GameObject*>* objects_ptr = objectManager->getObjects();
-                ImGui::Text("Number of Objects: %zu", objectManager->getObjects()->size());
+			if (ImGui::CollapsingHeader("See Objects")) {
+                ImGui::Text("Number of Objects: %zu", objects.size());
+				if(ImGui::TreeNode("Objects")) {
+					for (int i = 0; i < objects.size(); i++) {
+						std::string name = objects[i]->name;
+						std::string id = std::to_string(objects[i]->id);
+						std::string nameWithID = id + name;
+						if (ImGui::TreeNode(nameWithID.c_str())) {
+							ImGui::Text("Position: (%f, %f, %f)", objects[i]->position.x, objects[i]->position.y, objects[i]->position.z);
+							ImGui::Text("Rotation: (%f, %f, %f)", objects[i]->rotation.x, objects[i]->rotation.y, objects[i]->rotation.z);
+							ImGui::Text("Visible: %s", objects[i]->rendered ? "true" : "false");
+							ImGui::Text("Name: %s", name.c_str());
+							ImGui::Text("ID: %s", id.c_str());
+							ImGui::TreePop();
+						}
+					}
+					ImGui::TreePop();
+				}
 
 			}
 

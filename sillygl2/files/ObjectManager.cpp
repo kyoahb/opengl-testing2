@@ -71,7 +71,7 @@ void ObjectManager::rotateObjectsR(std::vector<GameObject*> objects, glm::vec3 r
     }
 
     for (auto& object : objects) {
-        object->rotate(storedRMatrix);
+        object->rotate(storedRMatrix, rotation);
     }
 }
 

@@ -74,7 +74,7 @@ public:
 
 		Key* rotateSingularCube = new Key(GLFW_KEY_R);
 		rotateSingularCube->holdFunction = [this, objectManager]() {
-			objectManager->getObjectByName("cube")->rotate(glm::rotate(glm::mat4(1.0f), (float)dTime * 360.0f, glm::vec3(0.0f, 1.0f, 0.0f)));
+			objectManager->getObjectByName("cube")->rotate(glm::rotate(glm::mat4(1.0f), (float)dTime * 360.0f, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
 			};
 		inputManager->addKey(rotateSingularCube);
 

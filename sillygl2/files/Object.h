@@ -28,7 +28,7 @@ public:
     void setTransformedThisFrame();
 
     void move(glm::vec3 change);
-    void rotate(glm::mat4 rotationMatrix);
+    void rotate(glm::mat4 rotationMatrix, glm::vec3 _rotation);
 
     void scaleInPlace(glm::vec3 scale);
     void scale(glm::vec3 scale);

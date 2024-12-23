@@ -17,7 +17,6 @@ public:
 	void render();
 
 private:
-	void old_render1();
     std::vector<GameObject*>* objects;
 	std::vector<GameObject*> renderedObjects;
 
