@@ -149,6 +149,7 @@ void Renderer::render() {
 		}
         // (more rendered objects than existing objects)
 		else {
+
 			// Find difference between renderedObjects and objects (objects that need to be unrendered)
 			std::vector<GameObject*> toUnrender = {};
 			for (auto& obj : renderedObjects) {
@@ -208,9 +209,28 @@ void Renderer::render() {
 
     // Manage existing objects being transformed
 	// If object(s) moved, rotated, or scaled, re-render that object specifically
-	// Replaces the vertices of the object in combinedVertices
     if (objectManager->anyTransformationsHappened()) {
-        
+        combinedVertices.clear();
+		for (size_t i = 0; i < objects->size(); ++i) {
+			GameObject* obj = (*objects)[i];
+			const auto& verts = obj->vertices;
+			combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data());
+
+    }
+    glBindVertexArray(VAO);
+    for (size_t i = 0; i < numIndices.size(); ++i) {
+        glDrawElements(GL_TRIANGLES, numIndices[i], GL_UNSIGNED_INT, (void*)(firstIndices[i] * sizeof(unsigned int)));
+    }
+    glBindVertexArray(0);
+}
+
+// Old rotation function
+// Worked by only rotating vertices of specific object rotating, rather than reworking all vertices back into combined_vertices table
+// Really slow, probably because emplace _back is so terrible
+        /*
         std::vector<GameObject*> transformedObjects = objectManager->getObjectsTransformedThisFrame();
         std::vector<std::pair<size_t, std::vector<glm::vec3>>> updatedVertices;
 
@@ -231,47 +251,37 @@ void Renderer::render() {
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER, 0, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data());
         }
-        
+        */
 
+// Old render function, no longer used
+// Objects just existing is significantly slower.
+// However, this function is able to handle rotations better, for some reason
+/*
+combinedVertices.clear();
+combinedIndices.clear();
+firstIndices.clear();
+numIndices.clear();
+
+GLsizei indexOffset = 0; // Offset for each object's indices; sum of number of all previous objects' vertices
+for (size_t i = 0; i < objects->size(); ++i) {
+    GameObject* obj = (*objects)[i];
+    const auto& verts = obj->vertices;
+    const auto& inds = obj->indices;
+
+    firstIndices.push_back(static_cast<GLint>(combinedIndices.size()));
+    numIndices.push_back(static_cast<GLsizei>(inds.size()));
+
+    combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
+    for (const auto& ind : inds) {
+        combinedIndices.push_back(ind + indexOffset);
     }
-    glBindVertexArray(VAO);
-    for (size_t i = 0; i < numIndices.size(); ++i) {
-        glDrawElements(GL_TRIANGLES, numIndices[i], GL_UNSIGNED_INT, (void*)(firstIndices[i] * sizeof(unsigned int)));
-    }
-    glBindVertexArray(0);
+
+    indexOffset += static_cast<GLsizei>(verts.size());
+
 }
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+glBufferData(GL_ARRAY_BUFFER, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data(), GL_DYNAMIC_DRAW);
 
-void Renderer::old_render1() {
-    // Old render function, no longer used
-    // Objects just existing is significantly slower.
-    // However, this function is able to handle rotations better, for some reason
-    /*
-    combinedVertices.clear();
-    combinedIndices.clear();
-    firstIndices.clear();
-    numIndices.clear();
-
-    GLsizei indexOffset = 0; // Offset for each object's indices; sum of number of all previous objects' vertices
-    for (size_t i = 0; i < objects->size(); ++i) {
-        GameObject* obj = (*objects)[i];
-        const auto& verts = obj->vertices;
-        const auto& inds = obj->indices;
-
-        firstIndices.push_back(static_cast<GLint>(combinedIndices.size()));
-        numIndices.push_back(static_cast<GLsizei>(inds.size()));
-
-        combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
-        for (const auto& ind : inds) {
-            combinedIndices.push_back(ind + indexOffset);
-        }
-
-        indexOffset += static_cast<GLsizei>(verts.size());
-
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data(), GL_DYNAMIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices.size() * sizeof(unsigned int), combinedIndices.data(), GL_DYNAMIC_DRAW);
-    */
-}
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices.size() * sizeof(unsigned int), combinedIndices.data(), GL_DYNAMIC_DRAW);
+*/
