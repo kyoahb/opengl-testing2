@@ -9,7 +9,6 @@ Renderer::Renderer(ObjectManager* objManager, unsigned int scr_width, unsigned i
     SCR_HEIGHT(scr_height)
 {
     objects = objectManager->getObjects();
-    verticesUpdated = objectManager->haveObjectsUpdated();
 
     // Setup globally applied matrices
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -49,36 +48,34 @@ void Renderer::setCamera(Camera* camera) {
 }
 
 void Renderer::render() {
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.5f, 0.0f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (view) {
         shader.setMat4("view", *view);
     }
 
-    verticesUpdated = objectManager->haveObjectsUpdated();
-    if (verticesUpdated) {
-        std::vector<glm::vec3> combined_vertices;
-        std::vector<unsigned int> combined_indices;
-        firsts.clear();
-        counts.clear();
+    std::vector<glm::vec3> combined_vertices;
+    std::vector<unsigned int> combined_indices;
+    firsts.clear();
+    counts.clear();
 
-        GLsizei vertex_offset = 0;
-        for (size_t i = 0; i < objects->size(); ++i) {
-            GameObject* obj = (*objects)[i];
-            const auto& verts = obj->vertices;
-            const auto& inds = obj->indices;
+    GLsizei vertex_offset = 0;
+    for (size_t i = 0; i < objects->size(); ++i) {
+        GameObject* obj = (*objects)[i];
+        const auto& verts = obj->vertices;
+        const auto& inds = obj->indices;
 
-            firsts.push_back(static_cast<GLint>(combined_indices.size()));
-            counts.push_back(static_cast<GLsizei>(inds.size()));
+        firsts.push_back(static_cast<GLint>(combined_indices.size()));
+        counts.push_back(static_cast<GLsizei>(inds.size()));
 
-            combined_vertices.insert(combined_vertices.end(), verts.begin(), verts.end());
-            for (const auto& ind : inds) {
-                combined_indices.push_back(ind + vertex_offset);
-            }
-
-            vertex_offset += static_cast<GLsizei>(verts.size());
+        combined_vertices.insert(combined_vertices.end(), verts.begin(), verts.end());
+        for (const auto& ind : inds) {
+            combined_indices.push_back(ind + vertex_offset);
         }
+
+        vertex_offset += static_cast<GLsizei>(verts.size());
+        
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, combined_vertices.size() * sizeof(glm::vec3), combined_vertices.data(), GL_DYNAMIC_DRAW);

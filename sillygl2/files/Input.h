@@ -44,6 +44,7 @@ class InputManager {
 public:
 	InputManager(GLFWwindow* window);
 	void addKey(Key* key);
+	void deleteKey(Key* key);
 	void update(double dTime);
 	void setMouse(Mouse* mouse);
 	Key* getKey(int keyCode);

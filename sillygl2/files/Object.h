@@ -4,19 +4,20 @@
 #include <vector>
 #include <string>
 
-extern bool objectsUpdated; // Declare the global variable
-
 class GameObject {
 public:
     glm::vec3 position;
     glm::vec3 rotation;
     std::vector<glm::vec3> vertices;
-    std::string name;
     std::vector<unsigned int> indices;
 	std::vector<GameObject*> children;
 	Camera* attachedCamera;
 
-    GameObject(glm::vec3 pos, std::string handle);
+    // Handles
+    std::string name;
+    int id;
+
+    GameObject(glm::vec3 _position, std::string _name);
 
     void move(glm::vec3 change);
     void rotate(glm::mat4 rotationMatrix);

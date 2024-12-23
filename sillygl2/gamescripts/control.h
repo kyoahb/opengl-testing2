@@ -68,7 +68,7 @@ public:
 			};
 		inputManager->addKey(scaleCubes);
 
-		Key* moveCube = new Key(GLFW_KEY_T);
+		Key* moveCube = new Key(GLFW_KEY_L);
 		moveCube->pressFunction = [this, objectManager]() {
 			GameObject* c = objectManager->getObjectByName("cube");
 			c->move(glm::vec3(0.0f, 0.0f, 1.0f));
@@ -84,36 +84,6 @@ public:
 			};
 		inputManager->addKey(speedUp);
 
-		Key* disableInput = new Key(GLFW_KEY_TAB);
-		disableInput->pressFunction = [this, inputManager, menuManager]() {
-			this->inputDisabled = !this->inputDisabled;
-			if (this->inputDisabled) {
-				inputManager->getMouse()->disabled = true;
-                for (auto& key : *(inputManager->getKeys())) {
-					key->isHeld = false;
-					
-					if (key->keyCode == GLFW_KEY_TAB) { // Don't disable the tab key
-						continue;
-					}
-					else {
-						key->disabled = true;
-					}
-				}
-				menuManager->showDemoWindow = true;
-				inputManager->getMouse()->setVisibility(true);
-			}
-			else {
-				inputManager->getMouse()->disabled = false;
-				for (auto& key : *(inputManager->getKeys())) {
-					key->disabled = false;
-				}
-				menuManager->showDemoWindow = false;
-				inputManager->getMouse()->setVisibility(false);
-			}
-			};
-		inputManager->addKey(disableInput);
-
-
 		lastXPos = 0.0f;
 		lastYPos = 0.0f;
 		Mouse* m = new Mouse(window);
@@ -128,6 +98,7 @@ public:
 			this->lastYPos = m->yPos;
 			};
 		inputManager->setMouse(m);
+
 
     }
 

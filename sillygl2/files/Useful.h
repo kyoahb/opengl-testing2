@@ -18,3 +18,5 @@ glm::vec3 vec3Clamp(glm::vec3 vector, float clamp);
 void vec3Print(glm::vec3 vector, std::string name);
 
 float rand_float(float a, float b);
+
+glm::vec3 rand_vec3(float a, float b);

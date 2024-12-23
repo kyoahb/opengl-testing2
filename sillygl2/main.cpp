@@ -12,15 +12,13 @@
 #include "Manager.h"
 // Game Scripts
 #include "control.h"
+#include "engine.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-
+void window_focus_callback(GLFWwindow* window, int focused);
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
 int main() {
     // glfw: initialize and configure
@@ -42,6 +40,7 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetWindowFocusCallback(window, window_focus_callback);
     // glad: load all OpenGL function pointers
 // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -59,6 +58,7 @@ int main() {
     Manager::getInstance().initialize(&inputManager, &objectManager, &renderer, &menuManager, window);
 
     scriptManager.registerScript(new ControlScript());
+    scriptManager.registerScript(new EngineScript());
 
     // Start scripts
     scriptManager.startScripts();
@@ -118,3 +118,18 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
+
+
+void window_focus_callback(GLFWwindow* window, int focused)
+{
+    if (focused)
+    {
+        // Window gained focus
+        std::cout << "Window gained focus" << std::endl;
+    }
+    else
+    {
+        // Window lost focus
+        std::cout << "Window lost focus" << std::endl;
+    }
+} 

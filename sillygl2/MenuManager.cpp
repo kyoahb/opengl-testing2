@@ -1,4 +1,5 @@
 #include "MenuManager.h"
+#include "Manager.h"
 
 MenuManager::MenuManager(GLFWwindow* window) {
 	// Setup Dear ImGui context
@@ -15,12 +16,27 @@ MenuManager::MenuManager(GLFWwindow* window) {
 	ImGui_ImplOpenGL3_Init();
 }
 
+void MenuManager::addMenu(Menu* menu) {
+	menus.push_back(menu);
+}
+
+Menu* MenuManager::getMenuByName(std::string name) {
+	for (auto menu : menus) {
+		if (menu->name == name) {
+			return menu;
+		}
+	}
+	return nullptr;
+}
+
 void MenuManager::frameStart() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	if (showDemoWindow) {
-		ImGui::ShowDemoWindow();
+	for (auto menu : menus) {
+		if (menu->visible) {
+			menu->showFunction();
+		}
 	}
 }
 

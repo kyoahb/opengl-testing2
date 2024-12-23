@@ -49,3 +49,7 @@ float rand_float(float a, float b)
     if (a > b) std::swap(a, b);
     return a + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (b - a)));
 }
+
+glm::vec3 rand_vec3(float a, float b) {
+	return glm::vec3(rand_float(a, b), rand_float(a, b), rand_float(a, b));
+}

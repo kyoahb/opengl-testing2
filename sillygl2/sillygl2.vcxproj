@@ -152,9 +152,11 @@
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Manager.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="MenuManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine.h" />
     <ClInclude Include="files\Camera.h" />
     <ClInclude Include="files\Input.h" />
     <ClInclude Include="files\Object.h" />
@@ -175,6 +177,7 @@
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="Manager.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="MenuManager.h" />
   </ItemGroup>
   <ItemGroup>

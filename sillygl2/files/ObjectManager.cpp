@@ -1,24 +1,19 @@
 #include "ObjectManager.h"
 
-ObjectManager::ObjectManager() {
+ObjectManager::ObjectManager() : storedRMatrix(glm::mat4(1.0f)), storedRotation(false) {
     GameObject* origin = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "origin");
     origin->vertices = { glm::vec3(0.0f, 0.0f, 0.0f) };
     origin->indices = { 0 };
     objects.push_back(origin);
 }
 
-void ObjectManager::setObjectsUpdated(bool updated) {
-    objectsUpdated = updated;
-}
-
 void ObjectManager::addObject(GameObject* object) {
+    object->id = (int)objects.size();
     objects.push_back(object);
-    objectsUpdated = true;
 }
 
 void ObjectManager::destroyObject(GameObject* object) {
     objects.erase(std::remove(objects.begin(), objects.end(), object), objects.end());
-    objectsUpdated = true;
 }
 
 bool ObjectManager::checkCollision(GameObject* object1, GameObject* object2) {
@@ -64,15 +59,6 @@ void ObjectManager::rotateObjectsR(std::vector<GameObject*> objects, glm::vec3 r
     for (auto& object : objects) {
         object->rotate(storedRMatrix);
     }
-    objectsUpdated = true;
-}
-
-bool ObjectManager::haveObjectsUpdated() {
-    if (objectsUpdated) {
-        objectsUpdated = false;
-        return true;
-    }
-    return false;
 }
 
 std::vector<GameObject*>* ObjectManager::getObjects() {
@@ -109,4 +95,22 @@ void ObjectManager::addCube(float width, float height, float depth, glm::vec3 bo
     cube->vertices = vertices;
     cube->indices = indices;
     addObject(cube);
+}
+
+void ObjectManager::addTriangle(glm::vec3 left, glm::vec3 right, glm::vec3 top, std::string name) {
+	std::vector<glm::vec3> vertices;
+	std::vector<unsigned int> indices;
+
+	vertices.insert(vertices.end(), { left, right, top });
+
+	indices.insert(indices.end(), {
+		0, 1, 2
+		});
+
+	glm::vec3 center = (left + right + top) / 3.0f;
+
+	GameObject* triangle = new GameObject(center, name);
+	triangle->vertices = vertices;
+	triangle->indices = indices;
+	addObject(triangle);
 }

@@ -1,9 +1,7 @@
 #include "Object.h"
 
-bool objectsUpdated = true; // Define the global variable
-
-GameObject::GameObject(glm::vec3 pos, std::string handle)
-    : position(pos), name(handle), rotation(glm::vec3(0.0f, 0.0f, 0.0f)), vertices({}), indices({}), attachedCamera(nullptr), children({}) {}
+GameObject::GameObject(glm::vec3 _position, std::string _name)
+    : id(-1), position(_position), name(_name), rotation(glm::vec3(0.0f, 0.0f, 0.0f)), vertices({}), indices({}), attachedCamera(nullptr), children({}) {}
 
 void GameObject::move(glm::vec3 change) {
     // Move self
@@ -22,8 +20,6 @@ void GameObject::move(glm::vec3 change) {
 	for (auto& child : children) {
 		child->move(change);
 	}
-
-    objectsUpdated = true;
 }
 
 void GameObject::rotate(glm::mat4 rotationMatrix) {
@@ -41,7 +37,6 @@ void GameObject::scaleInPlace(glm::vec3 scale) {
         vert *= scale;
         vert += position;
     }
-    objectsUpdated = true;
 }
 
 void GameObject::scale(glm::vec3 scale) {
@@ -49,7 +44,6 @@ void GameObject::scale(glm::vec3 scale) {
     for (auto& vert : vertices) {
         vert *= scale;
     }
-    objectsUpdated = true;
 }
 
 void GameObject::getAABB(glm::vec3& min, glm::vec3& max) const {

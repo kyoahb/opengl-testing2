@@ -52,6 +52,15 @@ void InputManager::addKey(Key* key) {
 	keys.emplace_back(key);
 }
 
+void InputManager::deleteKey(Key* key) {
+	for (auto it = keys.begin(); it != keys.end(); ++it) {
+		if (*it == key) {
+			keys.erase(it);
+			break;
+		}
+	}
+}
+
 void InputManager::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	// Retrieve the InputManager instance from the GLFW window's user pointer
 	InputManager* inputManager = static_cast<InputManager*>(glfwGetWindowUserPointer(window));
@@ -70,10 +79,10 @@ void InputManager::mouse_callback(GLFWwindow* window, double xpos, double ypos) 
 
 void InputManager::key_call(int key, int scancode, int action, int mods) {
 	Key* k = getKey(key);
-	if (k->disabled) {
+	if (k == nullptr) {
 		return;
 	}
-	if (k == nullptr) {
+	if (k->disabled) {
 		return;
 	}
 

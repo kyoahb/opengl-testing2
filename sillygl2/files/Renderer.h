@@ -20,7 +20,6 @@ private:
     float const vecSize = sizeof(float) * 3;
     std::vector<GLint> firsts;
     std::vector<GLsizei> counts;
-    bool verticesUpdated = true;
     unsigned int SCR_WIDTH;
     unsigned int SCR_HEIGHT;
     std::vector<GameObject*>* objects;
