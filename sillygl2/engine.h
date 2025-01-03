@@ -5,16 +5,23 @@
 
 class EngineScript : public Script {
 public:
+	Renderer* renderer;
+	ObjectManager* objectManager;
+	InputManager* inputManager;
+	MenuManager* menuManager;
+	GLFWwindow* window;
+
+
 	bool inputDisabled = false;
 	void onStart() override {
-		Renderer* renderer = Manager::getInstance().getRenderer();
-		ObjectManager* objectManager = Manager::getInstance().getObjectManager();
-		InputManager* inputManager = Manager::getInstance().getInputManager();
-		MenuManager* menuManager = Manager::getInstance().getMenuManager();
-		GLFWwindow* window = Manager::getInstance().getWindow();
+		renderer = Manager::getInstance().getRenderer();
+		objectManager = Manager::getInstance().getObjectManager();
+		inputManager = Manager::getInstance().getInputManager();
+		menuManager = Manager::getInstance().getMenuManager();
+		window = Manager::getInstance().getWindow();
 
 		Key* disableInput = new Key(GLFW_KEY_TAB);
-		disableInput->pressFunction = [this, inputManager, menuManager]() {
+		disableInput->pressFunction = [this]() {
 			this->inputDisabled = !this->inputDisabled;
 			if (this->inputDisabled) {
 				menuManager->getMenuByName("Debug")->show();
@@ -35,7 +42,11 @@ public:
 			else {
 				menuManager->getMenuByName("Debug")->hide();
 				menuManager->getMenuByName("Demo")->hide();
-				inputManager->getMouse()->disabled = false;
+				Mouse* mouse = inputManager->getMouse();
+				mouse->disabled = false;
+				mouse->returnFrame = true;
+
+				
 				for (auto& key : *(inputManager->getKeys())) {
 					key->disabled = false;
 				}
@@ -43,6 +54,18 @@ public:
 			}
 			};
 		inputManager->addKey(disableInput);
+
+		Key* testKey = new Key(GLFW_KEY_T);
+		testKey->pressFunction = [this]() {
+			GameObject* parent = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "parent", false);
+			GameObject* child = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "child", false);
+			parent->attachChild(child);
+			objectManager->addObject(parent);
+			objectManager->addObject(child);
+			};
+		inputManager->addKey(testKey);
+
+
 
 		// Setup Existing Demo Window as a window
 		Menu* demoMenu = new Menu([]() {
@@ -52,28 +75,16 @@ public:
 
 
 		// Debug menu creation
-		Menu* debugMenu = new Menu([debugMenu, objectManager]() {
+		Menu* debugMenu = new Menu([this, debugMenu]() {
 			ImGui::Begin("Debug Menu");
-			ImGui::SetWindowSize(ImVec2(300, 300));
+			ImGui::SetWindowSize(ImVec2(300, 300), ImGuiWindowFlags_AlwaysAutoResize);
 			std::vector<GameObject*>* objects_ptr = objectManager->getObjects();
 			std::vector<GameObject*> objects = *(objects_ptr);
 			ImGui::Text("This is a debug menu");
 			if (ImGui::CollapsingHeader("See Objects")) {
                 ImGui::Text("Number of Objects: %zu", objects.size());
 				if(ImGui::TreeNode("Objects")) {
-					for (int i = 0; i < objects.size(); i++) {
-						std::string name = objects[i]->name;
-						std::string id = std::to_string(objects[i]->id);
-						std::string nameWithID = id + name;
-						if (ImGui::TreeNode(nameWithID.c_str())) {
-							ImGui::Text("Position: (%f, %f, %f)", objects[i]->position.x, objects[i]->position.y, objects[i]->position.z);
-							ImGui::Text("Rotation: (%f, %f, %f)", objects[i]->rotation.x, objects[i]->rotation.y, objects[i]->rotation.z);
-							ImGui::Text("Visible: %s", objects[i]->rendered ? "true" : "false");
-							ImGui::Text("Name: %s", name.c_str());
-							ImGui::Text("ID: %s", id.c_str());
-							ImGui::TreePop();
-						}
-					}
+					objectTree(objects);
 					ImGui::TreePop();
 				}
 
@@ -87,8 +98,59 @@ public:
 
 	}
 
+	void ImGuiVector3(const char* label, glm::vec3& vec) {
+		ImGui::Text(label);
+		ImGui::SameLine();
+		ImGui::PushItemWidth(200); // Input fields have a max width 
+		ImGui::InputFloat("X##x", &vec.x, 0.1f, 1.0f, "%.2f");
+		ImGui::SameLine();
+		ImGui::InputFloat("Y##x", &vec.y, 0.1f, 1.0f, "%.2f");
+		ImGui::SameLine();
+		ImGui::InputFloat("Z##x", &vec.z, 0.1f, 1.0f, "%.2f");
+		ImGui::PopItemWidth();
+	}
+
+	void objectTree(std::vector<GameObject*> objects) {
+		for (int i = 0; i < objects.size(); i++) {
+			GameObject* object = objects[i];
+			std::string name = object->name;
+			std::string id = std::to_string(object->id);
+			std::string nameWithID = id + name;
+
+			if (ImGui::TreeNode(nameWithID.c_str())) {
+				glm::vec3& position = object->position;
+				glm::vec3& rotation = object->rotation;
+				ImGuiVector3("Position", position);
+				ImGui::Text("Position: (%f, %f, %f)", position.x, position.y, position.z);
+				ImGui::Text("Rotation: (%f, %f, %f)", rotation.x, rotation.y, rotation.z);
+				ImGui::Text("Visible: %s", object->rendered ? "true" : "false");
+				ImGui::Text("Name: %s", name.c_str());
+				ImGui::Text("ID: %s", id.c_str());
+
+				if (object->children.size() > 0) { // Recursive for each child
+					if (ImGui::TreeNode("Children")) {
+						objectTree(object->children);
+						ImGui::TreePop();
+					}
+				}
+				if (object->attachedCamera) {
+					if (ImGui::TreeNode("Attached Camera")) {
+						Camera* camera = object->attachedCamera;
+						glm::vec3 cameraPosition = camera->position;
+						glm::vec3 cameraRotation = camera->direction;
+						ImGui::Text("Position: (%f, %f, %f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+						ImGui::Text("Rotation: (%f, %f, %f)", cameraRotation.x, cameraRotation.y, cameraRotation.z);
+						ImGui::TreePop();
+					}
+				}
+				ImGui::TreePop();
+			}
+		}
+	}
+
 	void onUpdate(double deltaTime) override {
 	}
+
 private:
 
 };

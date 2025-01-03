@@ -13,8 +13,8 @@ class Renderer {
 public:
     Shader shader;
 	Renderer(ObjectManager* objManager, unsigned int scr_width, unsigned int scr_height);
-	void setCamera(Camera* camera);
-	void render();
+	void setCamera(Camera* camera); // Attach camera to renderer
+	void render(); // Render: run every frame
 
 private:
     std::vector<GameObject*>* objects;
@@ -47,11 +47,11 @@ private:
 
 	unsigned int indexOffset; // Offset for each object's indices; sum of number of all previous objects' vertices
 
-    unsigned int SCR_WIDTH;
-    unsigned int SCR_HEIGHT;
-    Camera* globalCamera;
-    ObjectManager* objectManager;
-    unsigned int VAO, VBO, EBO;
-    glm::mat4 projection, model;
+	unsigned int SCR_WIDTH; // Width of screen
+	unsigned int SCR_HEIGHT; // Height of screen
+	Camera* globalCamera; // Camera to render from (if exists)
+	ObjectManager* objectManager; // Object Manager to get objects from
+	unsigned int VAO, VBO, EBO; // Vertex Array Object, Vertex Buffer Object, Element Buffer Object
+	glm::mat4 projection, model; // Projection and Model matrices
     glm::mat4* view; // only initialised if camera is set
 };

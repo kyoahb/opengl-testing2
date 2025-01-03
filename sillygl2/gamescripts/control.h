@@ -49,7 +49,7 @@ public:
 
 
 		Key* addCube = new Key(GLFW_KEY_E);
-		addCube->holdFunction = [this, objectManager]() {
+		addCube->pressFunction = [this, objectManager]() {
 			objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
 			};
 		inputManager->addKey(addCube);
@@ -93,38 +93,36 @@ public:
 		m->changeFunction = [this, m]() {
 			float sensitivity = 0.05f;
 
-			double xoffset = (m->xPos - this->lastXPos) * sensitivity;
-			double yoffset = (m->yPos - this->lastYPos) * sensitivity;
+			double xoffset = (m->xPos - m->lastXPos) * sensitivity;
+			double yoffset = (m->yPos - m->lastYPos) * sensitivity;
 
 			camera->changeDirection(glm::vec3(static_cast<float>(yoffset), static_cast<float>(xoffset), 0.0f));
-			this->lastXPos = m->xPos;
-			this->lastYPos = m->yPos;
 			};
 		inputManager->setMouse(m);
 
 
     }
 
-	void movement(std::string way) {
+	void movement(std::string way) { // Inefficient but I DONT CARE! for now
 		glm::vec3 change = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 direction = camera->direction;
-		if (way == "forward") {
-			change.z += (float)cos(direction.y * M_PI / 180);
-			change.x += (float)sin(direction.y * M_PI / 180);
-			change.y += (float)sin(-1 * direction.x * M_PI / 180);
-		}
-		else if (way == "back") {
-			change.z -= (float)cos(direction.y * M_PI / 180);
-			change.x -= (float)sin(direction.y * M_PI / 180);
-			change.y -= (float)sin(-1 * direction.x * M_PI / 180);
-		}
+        if (way == "forward") {
+			change.z += (float)cos(glm::radians(direction.y));
+			change.x += (float)sin(glm::radians(direction.y));
+			change.y += (float)cos(glm::radians(direction.x));
+        }
+        else if (way == "back") {
+			change.z -= (float)cos(glm::radians(direction.y));
+			change.x -= (float)sin(glm::radians(direction.y));
+			change.y -= (float)cos(glm::radians(direction.x));
+        }
 		else if (way == "left") {
-			change.x += (float)cos(-1 * direction.y * M_PI / 180);
-			change.z += (float)sin(-1 * direction.y * M_PI / 180);
+			change.x += (float)cos(glm::radians(-direction.y));
+			change.z += (float)sin(glm::radians(-direction.y));
 		}
 		else if (way == "right") {
-			change.x -= (float)cos(-1 * direction.y * M_PI / 180);
-			change.z -= (float)sin(-1 * direction.y * M_PI / 180);
+			change.x -= (float)cos(glm::radians(-direction.y));
+			change.z -= (float)sin(glm::radians(-direction.y));
 		}
 		else if (way == "up") {
 			change.y += 1.0f;

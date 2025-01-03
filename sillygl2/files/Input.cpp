@@ -26,12 +26,14 @@ void Mouse::change() { // change = moved
 	}
 }
 
-void Mouse::setVisibility(bool visible) {
-	if (visible) {
+void Mouse::setVisibility(bool _visible) {
+	if (_visible) {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		visible = _visible;
 	}
 	else {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		visible = _visible;
 	}
 }
 
@@ -96,11 +98,19 @@ void InputManager::key_call(int key, int scancode, int action, int mods) {
 
 void InputManager::mouse_call(double xpos, double ypos) {
 	if (mouse) {
-		if (mouse->disabled) return;
+		if (mouse->disabled) {
+			return;
+		}
+		if (mouse->returnFrame) {
+			mouse->lastXPos = xpos;
+			mouse->lastYPos = ypos;
+			mouse->returnFrame = false;
+		}
 		mouse->xPos = xpos;
 		mouse->yPos = ypos;
-
 		mouse->change();
+		mouse->lastXPos = xpos;
+		mouse->lastYPos = ypos;
 	} 
 }
 

@@ -10,18 +10,16 @@ class Camera
 {
 public:
 	glm::vec3 position; // camera position as a vertex in the space
-	glm::vec3 direction; // Pitch, -Yaw, Roll
+	glm::vec3 direction; // Pitch (distance from straight up where 0 is up and 180 is down), Yaw (distance from forward rotation increasing going left), Roll (rotation around z-axis)
 
-	glm::mat4 view = glm::mat4(1.0f);
-	Camera();
-	void updateView();
-	void changeDirection(glm::vec3 changeDirection);
+	glm::mat4 view = glm::mat4(1.0f); // View matrix
+	Camera(); 
+	void updateView(); // Update view matrix
+	void changeDirection(glm::vec3 changeDirection); // Change direction of camera and resulting cameraFront position and view matrix
 
-	void move(glm::vec3 change);
-	void setSpeed(float speed);
+	void move(glm::vec3 change); // Move camera position
 
 private:
 	glm::vec3 cameraFront; // Position always in front
 	glm::vec3 cameraUp; // Position always above
-	float speed;
 };

@@ -8,19 +8,19 @@ class ObjectManager {
 public:
     ObjectManager();
 
-    void addObject(GameObject* object);
-    void destroyObject(GameObject* object);
-    bool checkCollision(GameObject* object1, GameObject* object2);
+	void addObject(GameObject* object); // Adds object to list of objects
+	void destroyObject(GameObject* object); // Removes object from list of objects
+    bool checkCollision(GameObject* object1, GameObject* object2); 
 
-    GameObject* getObjectByName(std::string name);
-    std::vector<GameObject*> getObjectListByName(std::string name);
-	std::vector<GameObject*> getObjectsTransformedThisFrame();
-	bool anyTransformationsHappened(); 
+	GameObject* getObjectByName(std::string name); // Returns the first object with the given name
+	std::vector<GameObject*> getObjectListByName(std::string name); // Returns a list of objects with the given name
+	std::vector<GameObject*> getObjectsTransformedThisFrame(); // Returns a list of objects that have been moved, rotated, or scaled this frame
+	bool anyTransformationsHappened(); // Returns true if any object has been moved, rotated, or scaled this frame
 
-    void rotateObjectsR(std::vector<GameObject*> objects, glm::vec3 rotation);
-    std::vector<GameObject*>* getObjects();
-    void addCube(float width, float height, float depth, glm::vec3 bottomLeft, std::string name);
-    void addTriangle(glm::vec3 left, glm::vec3 right, glm::vec3 top, std::string name);
+	void rotateObjectsR(std::vector<GameObject*> objects, glm::vec3 rotation); // Rotates objects by the given rotation, faster because it only computes rotation once
+	std::vector<GameObject*>* getObjects(); // Returns the list of objects
+	void addCube(float width, float height, float depth, glm::vec3 bottomLeft, std::string name); // Adds a cube to the list of objects
+	void addTriangle(glm::vec3 left, glm::vec3 right, glm::vec3 top, std::string name); // Adds a triangle to the list of objects
 
 private:
     std::vector<GameObject*> objects;
