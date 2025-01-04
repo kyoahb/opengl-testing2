@@ -61,20 +61,23 @@ public:
 		inputManager->addKey(add2250Cubes);
 
 		Key* removeCube = new Key(GLFW_KEY_F);
-		removeCube->holdFunction = [this, objectManager]() {
+		removeCube->pressFunction = [this, objectManager]() {
 			objectManager->destroyObject(objectManager->getObjectByName("cube"));
 			};
 		inputManager->addKey(removeCube);
 
 		Key* rotateCubes = new Key(GLFW_KEY_Q);
 		rotateCubes->holdFunction = [this, objectManager]() {
-			objectManager->rotateObjectsR(objectManager->getObjectListByName("cube"), (float)dTime * glm::vec3(360.0f, 0.0f, 0.0f));
+			glm::vec3 rotation = (float)dTime * glm::vec3(360.0f, 0.0f, 0.0f);
+			std::vector<GameObject*> cubes = objectManager->getObjectListByName("cube");
+			objectManager->rotateObjectsR(cubes, rotation);
 			};
 		inputManager->addKey(rotateCubes);
 
 		Key* rotateSingularCube = new Key(GLFW_KEY_R);
 		rotateSingularCube->holdFunction = [this, objectManager]() {
-			objectManager->getObjectByName("cube")->rotate(glm::rotate(glm::mat4(1.0f), (float)dTime * 360.0f, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::vec3 rotation = glm::vec3(0.0f, 1.0f, 0.0f);
+			objectManager->getObjectByName("cube")->rotate(rotation);
 			};
 		inputManager->addKey(rotateSingularCube);
 
@@ -105,7 +108,7 @@ public:
 
 	void movement(std::string way) { // Inefficient but I DONT CARE! for now
 		glm::vec3 change = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec3 direction = camera->direction;
+		glm::vec3 direction = camera->getDirection();
         if (way == "forward") {
 			change.z += (float)cos(glm::radians(direction.y));
 			change.x += (float)sin(glm::radians(direction.y));

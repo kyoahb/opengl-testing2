@@ -133,8 +133,8 @@ void Renderer::render() {
 		if (renderedObjects.size() < objects->size()) {
 			for (size_t i = renderedObjects.size(); i < objects->size(); ++i) { // Looping through new objects
 				GameObject* obj = (*objects)[i];
-				const auto& verts = obj->vertices;
-				const auto& inds = obj->indices;
+				const auto& verts = obj->getVertices();
+				const auto& inds = obj->getIndices();
 
 				firstIndices.push_back(static_cast<GLint>(combinedIndices.size()));
 				firstVertices.push_back(static_cast<GLint>(combinedVertices.size()));
@@ -165,8 +165,8 @@ void Renderer::render() {
 					// Get place of object in renderedObjects
 					size_t place = std::distance(renderedObjects.begin(), it);
 					
-					const auto& verts = obj->vertices;
-                    const auto& inds = obj->indices;
+					const auto& verts = obj->getVertices();
+                    const auto& inds = obj->getIndices();
 
 					GLint firstIndexPosition = firstIndices[place]; // position of first index of object in combinedIndices
 					GLint firstVertexPosition = firstVertices[place]; // position of first vertex of object in combinedVertices
@@ -213,7 +213,7 @@ void Renderer::render() {
         combinedVertices.clear();
 		for (size_t i = 0; i < objects->size(); ++i) {
 			GameObject* obj = (*objects)[i];
-			const auto& verts = obj->vertices;
+			const auto& verts = obj->getVertices();
 			combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -222,7 +222,10 @@ void Renderer::render() {
     }
     glBindVertexArray(VAO);
     for (size_t i = 0; i < numIndices.size(); ++i) {
-        glDrawElements(GL_TRIANGLES, numIndices[i], GL_UNSIGNED_INT, (void*)(firstIndices[i] * sizeof(unsigned int)));
+		GameObject* obj = (*objects)[i];
+        if (obj->visible) { // ONLY draw if object is visible
+            glDrawElements(GL_TRIANGLES, numIndices[i], GL_UNSIGNED_INT, (void*)(firstIndices[i] * sizeof(unsigned int)));
+        }
     }
     glBindVertexArray(0);
 }

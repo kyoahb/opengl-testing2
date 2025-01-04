@@ -6,12 +6,18 @@ ObjectManager::ObjectManager() : storedRMatrix(glm::mat4(1.0f)), storedRotation(
 }
 
 void ObjectManager::addObject(GameObject* object) {
-    object->id = (int)objects.size();
+    object->id = nextID;
+    nextID += 1;
     objects.push_back(object);
 }
 
 void ObjectManager::destroyObject(GameObject* object) {
+    if (object == nullptr) return;
+	for (auto& obj : object->getChildren()) {
+		destroyObject(obj);
+	}
     objects.erase(std::remove(objects.begin(), objects.end(), object), objects.end());
+    delete(object);
 }
 
 bool ObjectManager::checkCollision(GameObject* object1, GameObject* object2) {
@@ -45,33 +51,20 @@ std::vector<GameObject*> ObjectManager::getObjectListByName(std::string name) {
     return objectsWithName;
 }
 
-std::vector<GameObject*> ObjectManager::getObjectsTransformedThisFrame() {
-	std::vector<GameObject*> transformedObjectsThisFrame = {};
-	for (auto& object : objects) {
-		if (object->transformedThisFrame) {
-			transformedObjectsThisFrame.push_back(object);
-		}
-	}
-	return transformedObjectsThisFrame;
-}
-
 bool ObjectManager::anyTransformationsHappened() {
 	bool temp = anyTransformationsThisFrame;
 	anyTransformationsThisFrame = false;
     return temp;
 }
 
-void ObjectManager::rotateObjectsR(std::vector<GameObject*> objects, glm::vec3 rotation) {
+void ObjectManager::rotateObjectsR(std::vector<GameObject*>& objects, glm::vec3 rotation) {
     if (rotation != storedRotation) {
-        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-        storedRMatrix = rotationZ * rotationY * rotationX;
+        storedRMatrix = mat4Rotate(rotation);
         storedRotation = rotation;
     }
 
     for (auto& object : objects) {
-        object->rotate(storedRMatrix, rotation);
+        object->rotateWithMatrix(storedRMatrix, rotation);
     }
 }
 
@@ -106,8 +99,7 @@ void ObjectManager::addCube(float width, float height, float depth, glm::vec3 bo
     glm::vec3 center = bottomLeft + glm::vec3(width / 2, height / 2, depth / 2);
 
     GameObject* cube = new GameObject(center, name, true);
-    cube->vertices = vertices;
-    cube->indices = indices;
+	cube->addVerticesIndices(vertices, indices);
     addObject(cube);
 }
 
@@ -124,7 +116,6 @@ void ObjectManager::addTriangle(glm::vec3 left, glm::vec3 right, glm::vec3 top, 
 	glm::vec3 center = (left + right + top) / 3.0f;
 
 	GameObject* triangle = new GameObject(center, name, true);
-	triangle->vertices = vertices;
-	triangle->indices = indices;
+	triangle->addVerticesIndices(vertices, indices);
 	addObject(triangle);
 }

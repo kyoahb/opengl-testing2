@@ -74,13 +74,6 @@ int main() {
         glfwPollEvents();
         // change deltaTime
         double currentFrame = glfwGetTime();
-        frames++;
-        if (currentFrame - lastSecond > 1) {
-            // A full second has passed. Return all the frames that have passed between that time.
-            lastSecond = currentFrame;
-            std::cout << "FPS: " << frames << "\n";
-            frames = 0;
-        }
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
