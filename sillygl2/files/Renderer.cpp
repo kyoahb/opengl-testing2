@@ -133,18 +133,7 @@ void Renderer::render() {
 		if (renderedObjects.size() < objects->size()) {
 			for (size_t i = renderedObjects.size(); i < objects->size(); ++i) { // Looping through new objects
 				GameObject* obj = (*objects)[i];
-				const auto& verts = obj->getVertices();
-				const auto& inds = obj->getIndices();
-
-				firstIndices.push_back(static_cast<GLint>(combinedIndices.size()));
-				firstVertices.push_back(static_cast<GLint>(combinedVertices.size()));
-				numIndices.push_back(static_cast<GLsizei>(inds.size()));
-				numVertices.push_back(static_cast<GLsizei>(verts.size()));
-
-				combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
-				for (const auto& ind : inds) {
-					combinedIndices.push_back(ind + firstVertices.back());
-				}
+				renderObject(obj);
 			}
 		}
         // (more rendered objects than existing objects)
@@ -160,65 +149,21 @@ void Renderer::render() {
 			// Unrender objects that need to be unrendered
             // Object needs to be removed from: renderedObjects, firstIndices, numIndices, numVertices, combinedVertices, combinedIndices
 			for (auto& obj : toUnrender) {
-				auto it = std::find(renderedObjects.begin(), renderedObjects.end(), obj);
-				if (it != renderedObjects.end()) {
-					// Get place of object in renderedObjects
-					size_t place = std::distance(renderedObjects.begin(), it);
-					
-					const auto& verts = obj->getVertices();
-                    const auto& inds = obj->getIndices();
-
-					GLint firstIndexPosition = firstIndices[place]; // position of first index of object in combinedIndices
-					GLint firstVertexPosition = firstVertices[place]; // position of first vertex of object in combinedVertices
-					GLsizei numIndex = inds.size(); // amount of indices of object
-					GLsizei numVertex = verts.size(); // amount of vertices of object
-
-
-                    renderedObjects.erase(it); // Erases from renderedObjects
-					firstIndices.erase(firstIndices.begin() + place); // Erases from firstIndices
-					// update firstIndices, so that the first index of all the next objects is correct
-					for (size_t i = place; i < firstIndices.size(); ++i) {
-						firstIndices[i] -= numIndex;
-					}
-
-					firstVertices.erase(firstVertices.begin() + place); // Erases from firstVertices
-					// update firstVertices, so that the first index of all the next objects is correct
-					for (size_t i = place; i < firstVertices.size(); ++i) {
-						firstVertices[i] -= numVertex;
-					}
-
-					numIndices.erase(numIndices.begin() + place); // Erases from numIndices
-					numVertices.erase(numVertices.begin() + place); // Erases from numVertices
-					combinedVertices.erase(combinedVertices.begin() + firstVertexPosition, combinedVertices.begin() + firstVertexPosition + numVertex); // Erases from combinedVertices
-					combinedIndices.erase(combinedIndices.begin() + firstIndexPosition, combinedIndices.begin() + firstIndexPosition + numIndex); // Erases from combinedIndices
-					
-					// update relative combinedIndices, so that the indices of all the next objects are correct
-					for (size_t i = firstIndexPosition; i < combinedIndices.size(); ++i) {
-						combinedIndices[i] -= numVertex;
-					}
-				}
+				unrenderObject(obj);
 			}
 		}
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices.size() * sizeof(unsigned int), combinedIndices.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices.size() * sizeof(unsigned int), combinedIndices.data(), GL_STATIC_DRAW);
         renderedObjects = *objects;
 	}
 
     // Manage existing objects being transformed
 	// If object(s) moved, rotated, or scaled, re-render that object specifically
     if (objectManager->anyTransformationsHappened()) {
-        combinedVertices.clear();
-		for (size_t i = 0; i < objects->size(); ++i) {
-			GameObject* obj = (*objects)[i];
-			const auto& verts = obj->getVertices();
-			combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
-		}
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data());
-
+		updateVertices();
     }
     glBindVertexArray(VAO);
     for (size_t i = 0; i < numIndices.size(); ++i) {
@@ -230,61 +175,75 @@ void Renderer::render() {
     glBindVertexArray(0);
 }
 
-// Old rotation function
-// Worked by only rotating vertices of specific object rotating, rather than reworking all vertices back into combined_vertices table
-// Really slow, probably because emplace _back is so terrible
-        /*
-        std::vector<GameObject*> transformedObjects = objectManager->getObjectsTransformedThisFrame();
-        std::vector<std::pair<size_t, std::vector<glm::vec3>>> updatedVertices;
+void Renderer::renderObject(GameObject* obj) {
+	// Get vertices and indices. May have to change this later to get vertices as references
+	const auto& verts = obj->getVertices();
+	const auto& inds = obj->getIndices();
 
-        for (auto& obj : transformedObjects) {
-            auto it = std::find(renderedObjects.begin(), renderedObjects.end(), obj);
-            if (it != renderedObjects.end()) {
-                size_t place = std::distance(renderedObjects.begin(), it);
-                updatedVertices.emplace_back(place, obj->vertices);
-            }
-        }
+	firstIndices.push_back(static_cast<GLint>(combinedIndices.size())); // Push back the starting index of the object in combinedIndices
+	firstVertices.push_back(static_cast<GLint>(combinedVertices.size())); // Push back the starting index of the object in combinedVertices
+	numIndices.push_back(static_cast<GLsizei>(inds.size())); // Push back the number of indices of the object
+	numVertices.push_back(static_cast<GLsizei>(verts.size())); // Push back the number of vertices of the object
 
-        if (!updatedVertices.empty()) {
-            for (const auto& [place, verts] : updatedVertices) {
-                GLint firstVertexPosition = firstVertices[place];
-                std::copy(verts.begin(), verts.end(), combinedVertices.begin() + firstVertexPosition);
-            }
+	combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end()); // Add vertices to flat vector 
+	for (const auto& ind : inds) {
+		combinedIndices.push_back(ind + firstVertices.back()); // Add offset (firstVertices.back()) to index and push back, for each index.
+	}
+}
 
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data());
-        }
-        */
+void Renderer::unrenderObject(GameObject* obj) {
+	auto it = std::find(renderedObjects.begin(), renderedObjects.end(), obj);
+	if (it == renderedObjects.end()) {
+		// Object not found in renderedObjects, cannot unrender something that was not rendered in the first place!
+		std::cout << "Unrendering of object that was never rendered...?" << std::endl;
+		return;
+	}
 
-// Old render function, no longer used
-// Objects just existing is significantly slower.
-// However, this function is able to handle rotations better, for some reason
-/*
-combinedVertices.clear();
-combinedIndices.clear();
-firstIndices.clear();
-numIndices.clear();
+	// Get place of object in renderedObjects, to find things in other vectors
+	size_t place = std::distance(renderedObjects.begin(), it);
 
-GLsizei indexOffset = 0; // Offset for each object's indices; sum of number of all previous objects' vertices
-for (size_t i = 0; i < objects->size(); ++i) {
-    GameObject* obj = (*objects)[i];
-    const auto& verts = obj->vertices;
-    const auto& inds = obj->indices;
+	const auto& verts = obj->getVertices();
+	const auto& inds = obj->getIndices();
 
-    firstIndices.push_back(static_cast<GLint>(combinedIndices.size()));
-    numIndices.push_back(static_cast<GLsizei>(inds.size()));
+	GLint firstIndexPosition = firstIndices[place]; // position of first index of object in combinedIndices
+	GLint firstVertexPosition = firstVertices[place]; // position of first vertex of object in combinedVertices
+	GLsizei numIndex = inds.size(); // amount of indices of object
+	GLsizei numVertex = verts.size(); // amount of vertices of object
 
-    combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
-    for (const auto& ind : inds) {
-        combinedIndices.push_back(ind + indexOffset);
-    }
 
-    indexOffset += static_cast<GLsizei>(verts.size());
+	renderedObjects.erase(it); // Erases from renderedObjects
+
+	firstIndices.erase(firstIndices.begin() + place); // Erases from firstIndices
+	// update firstIndices, so that the first index of all the next objects is correct
+	for (size_t i = place; i < firstIndices.size(); ++i) {
+		firstIndices[i] -= numIndex;
+	}
+
+	firstVertices.erase(firstVertices.begin() + place); // Erases from firstVertices
+	// update firstVertices, so that the first index of all the next objects is correct
+	for (size_t i = place; i < firstVertices.size(); ++i) {
+		firstVertices[i] -= numVertex;
+	}
+
+	numIndices.erase(numIndices.begin() + place); // Erases from numIndices
+	numVertices.erase(numVertices.begin() + place); // Erases from numVertices
+	combinedVertices.erase(combinedVertices.begin() + firstVertexPosition, combinedVertices.begin() + firstVertexPosition + numVertex); // Erases vertices from combinedVertices
+	combinedIndices.erase(combinedIndices.begin() + firstIndexPosition, combinedIndices.begin() + firstIndexPosition + numIndex); // Erases indices from combinedIndices
+
+	// update relative combinedIndices, so that the indices of all the next objects are correct
+	for (size_t i = firstIndexPosition; i < combinedIndices.size(); ++i) {
+		combinedIndices[i] -= numVertex;
+	}
 
 }
-glBindBuffer(GL_ARRAY_BUFFER, VBO);
-glBufferData(GL_ARRAY_BUFFER, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data(), GL_DYNAMIC_DRAW);
 
-glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices.size() * sizeof(unsigned int), combinedIndices.data(), GL_DYNAMIC_DRAW);
-*/
+void Renderer::updateVertices() {
+	combinedVertices.clear();
+	for (size_t i = 0; i < objects->size(); ++i) {
+		GameObject* obj = (*objects)[i];
+		const auto& verts = obj->getVertices();
+		combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data());
+}

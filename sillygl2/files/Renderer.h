@@ -16,6 +16,11 @@ public:
 	void setCamera(Camera* camera); // Attach camera to renderer
 	void render(); // Render: run every frame
 
+
+	void renderObject(GameObject* object); // Add object to rendered list
+	void unrenderObject(GameObject* obj); // Remove object from rendered list
+	void updateVertices(); // Update vertices of all objects
+
 private:
     std::vector<GameObject*>* objects;
 	std::vector<GameObject*> renderedObjects;
