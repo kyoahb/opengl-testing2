@@ -19,10 +19,15 @@ public:
 
 	void renderObject(GameObject* object); // Add object to rendered list
 	void unrenderObject(GameObject* obj); // Remove object from rendered list
-	void updateVertices(); // Update vertices of all objects
+	void redoVertices(); // Update vertices of all objects -> used for transformations where vertices change
+	void redoObjVertices(GameObject* obj); // Update vertices of object -> used for transformations where vertices change
+	void redoAll(); // Update all objects -> used for transformations where vertices/indices are added/removed
+	void redoObj(GameObject* obj); // Update object -> used for transformations where vertices/indices are added/removed
+
 
 private:
-    std::vector<GameObject*>* objects;
+    std::vector<GameObject*>* objectsptr;
+	std::vector<GameObject*> objects;
 	std::vector<GameObject*> renderedObjects;
 
     float const vecSize = sizeof(float) * 3;

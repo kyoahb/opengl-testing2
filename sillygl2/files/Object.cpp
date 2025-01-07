@@ -1,19 +1,26 @@
 #include "Object.h"
 
-bool anyTransformationsThisFrame = false;
+std::vector<GameObject*> transformedObjects = {};
+std::vector<GameObject*> vertChangedObjects = {};
 
 GameObject::GameObject(glm::vec3 _position, std::string _name, bool _visible)
-    : id(-1), position(_position), name(_name), rotation(glm::vec3(0.0f, 0.0f, 0.0f)), vertices({}), indices({}), attachedCamera(nullptr), children({}), visible(_visible) 
+    : id(-1), position(_position), name(_name), rotation(glm::vec3(0.0f, 0.0f, 0.0f)), vertices({}), indices({}), attachedCamera(nullptr), children({}), visible(_visible)
 {
 }
 
-void GameObject::setTransformedThisFrame() {
-    if(visible)
-    {
-        anyTransformationsThisFrame = true;
-		transformedThisFrame = true;
-        //transformedObjectsThisFrame.push_back(this);
-    }
+void GameObject::setObjectEvent(ObjectEvent e) {
+	if (visible == false) { // No point, saves performance
+		return;
+	}
+
+    event = e;
+
+	if (e == Object_Transformation) {
+		transformedObjects.push_back(this);
+	}
+	else if (e == Object_Vertices_Changed) {
+		vertChangedObjects.push_back(this);
+	}
 }
 
 glm::vec3& GameObject::getPosition() {
@@ -39,9 +46,12 @@ Camera* GameObject::getAttachedCamera() {
 	return attachedCamera;
 }
 
-void GameObject::addVerticesIndices(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices) {
+void GameObject::addVerticesIndices(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices, bool toRerender) {
     vertices.insert(vertices.end(), _vertices.begin(), _vertices.end());
     indices.insert(indices.end(), _indices.begin(), _indices.end());
+    if (toRerender) {
+        setObjectEvent(Object_Vertices_Changed);
+    }
 }
 
 
@@ -61,7 +71,7 @@ void GameObject::move(glm::vec3& change) {
 	for (auto& child : children) {
 		child->move(change);
 	}
-    setTransformedThisFrame();
+    setObjectEvent(Object_Transformation);
 }
 
 void GameObject::rotateWithMatrix(glm::mat4& rotationMatrix, glm::vec3 _rotation) {
@@ -73,7 +83,7 @@ void GameObject::rotateWithMatrix(glm::mat4& rotationMatrix, glm::vec3 _rotation
         glm::vec4 simd_result = rotationMatrix * simd_translated;
         vert = glm::vec3(simd_result) + position;
     }
-    setTransformedThisFrame();
+    setObjectEvent(Object_Transformation);
 }
 
 void GameObject::rotate(glm::vec3& _rotation) {
@@ -87,7 +97,7 @@ void GameObject::scaleInPlace(glm::vec3& scale) {
         vert *= scale;
         vert += position;
     }
-    setTransformedThisFrame();
+    setObjectEvent(Object_Transformation);
 }
 
 void GameObject::scale(glm::vec3& scale) {
@@ -95,7 +105,7 @@ void GameObject::scale(glm::vec3& scale) {
     for (auto& vert : vertices) {
         vert *= scale;
     }
-    setTransformedThisFrame();
+    setObjectEvent(Object_Transformation);
 }
 
 void GameObject::getAABB(glm::vec3& min, glm::vec3& max) {
@@ -108,7 +118,7 @@ void GameObject::getAABB(glm::vec3& min, glm::vec3& max) {
         min = glm::min(min, vert);
         max = glm::max(max, vert);
     }
-    setTransformedThisFrame();
+    setObjectEvent(Object_Transformation);
 }
 
 void GameObject::attachCamera(Camera* camera) {

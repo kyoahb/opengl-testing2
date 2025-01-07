@@ -8,7 +8,7 @@ Renderer::Renderer(ObjectManager* objManager, unsigned int scr_width, unsigned i
     SCR_WIDTH(scr_width),
     SCR_HEIGHT(scr_height)
 {
-    objects = objectManager->getObjects();
+    objectsptr = objectManager->getObjects();
     renderedObjects = {};
     indexOffset = 0;
     // Setup globally applied matrices
@@ -120,54 +120,76 @@ void Renderer::render() {
     */
 
 
+	 bool largeRender = false;
+	 bool smallRender = false;
 
-    // 2 Situations in which object(s) need to be re-rendered (Excluding those where shader matrices can be used: ie Camera Movement):
-	// Object(s) added or removed
-	// Object(s) moved, rotated, or scaled
-    
-    // Manage added or removed objects;
-	// If object(s) added or removed, render or unrender that object specifically
-    // Code might bug out if objects are ADDED and REMOVED in the same frame but i dont know if thats possible
-	if (renderedObjects.size() != objects->size()) {
-		// (less renderedObjects than existing objects)
-		if (renderedObjects.size() < objects->size()) {
-			for (size_t i = renderedObjects.size(); i < objects->size(); ++i) { // Looping through new objects
-				GameObject* obj = (*objects)[i];
-				renderObject(obj);
-			}
-		}
-        // (more rendered objects than existing objects)
-		else {
+	 objects = *(objectsptr);
 
-			// Find difference between renderedObjects and objects (objects that need to be unrendered)
-			std::vector<GameObject*> toUnrender = {};
-			for (auto& obj : renderedObjects) {
-				if (std::find(objects->begin(), objects->end(), obj) == objects->end()) {
-					toUnrender.push_back(obj);
-				}
-			}
-			// Unrender objects that need to be unrendered
-            // Object needs to be removed from: renderedObjects, firstIndices, numIndices, numVertices, combinedVertices, combinedIndices
-			for (auto& obj : toUnrender) {
-				unrenderObject(obj);
-			}
-		}
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data(), GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices.size() * sizeof(unsigned int), combinedIndices.data(), GL_STATIC_DRAW);
-        renderedObjects = *objects;
+	 // If objects were added or removed, render or unrender them
+	 if (objectManager->addedObjects.size() > 0) {
+		 largeRender = true;
+
+		 // For each added object, render it
+		 for (auto& obj : objectManager->addedObjects) {
+			  renderObject(obj);
+	
+		 }
+		 objectManager->addedObjects.clear();
+	 }
+
+	 if (objectManager->removedObjects.size() > 0) {
+		 largeRender = true;
+
+		 // For each added object, unrender it
+		 for (auto& obj : objectManager->removedObjects) {
+			 unrenderObject(obj);
+		 }
+		 objectManager->removedObjects.clear();
+	 }
+	 
+	 // If objects were transformed, update their vertices
+	 float transformedSize = transformedObjects.size();
+	 if (transformedSize > 0) {
+		 smallRender = true;
+
+		 if (transformedSize >= objects.size()/2) { // Redo all vertices if more than half of all objects were transformed. This is faster
+			 redoVertices();
+		 }
+		 else { // Otherwise, just redo the vertices of each transformed object individually
+			 for (auto& obj : transformedObjects) {
+				 redoObjVertices(obj);
+			 }
+		 }
+		 transformedObjects.clear();
+	 }
+
+	 if (vertChangedObjects.size() > 0) {
+		 largeRender = true;
+
+		 // Completely remove + re render each object that had its vertices changed.
+		 for (auto& obj : vertChangedObjects) {
+			 redoObj(obj);
+		 }
+		 vertChangedObjects.clear();
+	 }
+
+    glBindVertexArray(VAO);
+
+	if (smallRender && !largeRender) { // Smaller, vertice-only update.
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data());
+	}
+	else if (largeRender) { // Larger update, resending all data.
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data(), GL_DYNAMIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices.size() * sizeof(unsigned int), combinedIndices.data(), GL_DYNAMIC_DRAW);
 	}
 
-    // Manage existing objects being transformed
-	// If object(s) moved, rotated, or scaled, re-render that object specifically
-    if (objectManager->anyTransformationsHappened()) {
-		updateVertices();
-    }
-    glBindVertexArray(VAO);
     for (size_t i = 0; i < numIndices.size(); ++i) {
-		GameObject* obj = (*objects)[i];
+		GameObject* obj = (objects)[i];
         if (obj->visible) { // ONLY draw if object is visible
             glDrawElements(GL_TRIANGLES, numIndices[i], GL_UNSIGNED_INT, (void*)(firstIndices[i] * sizeof(unsigned int)));
         }
@@ -175,10 +197,15 @@ void Renderer::render() {
     glBindVertexArray(0);
 }
 
+// Adds object to renderedObjects list.
+// Setups the object's vertices and indices in the combinedVertices and combinedIndices vectors.
+// Also sets up the object's position in the firstIndices, firstVertices, numIndices, and numVertices vectors.
 void Renderer::renderObject(GameObject* obj) {
 	// Get vertices and indices. May have to change this later to get vertices as references
 	const auto& verts = obj->getVertices();
 	const auto& inds = obj->getIndices();
+
+	renderedObjects.push_back(obj); // Add object to renderedObjects
 
 	firstIndices.push_back(static_cast<GLint>(combinedIndices.size())); // Push back the starting index of the object in combinedIndices
 	firstVertices.push_back(static_cast<GLint>(combinedVertices.size())); // Push back the starting index of the object in combinedVertices
@@ -191,6 +218,9 @@ void Renderer::renderObject(GameObject* obj) {
 	}
 }
 
+// Removes object from renderedObjects list
+// Removes object's vertices and indices from combinedVertices and combinedIndices vectors
+// Also removes object's position in the firstIndices, firstVertices, numIndices, and numVertices vectors, and updates positions of next objects.
 void Renderer::unrenderObject(GameObject* obj) {
 	auto it = std::find(renderedObjects.begin(), renderedObjects.end(), obj);
 	if (it == renderedObjects.end()) {
@@ -207,16 +237,15 @@ void Renderer::unrenderObject(GameObject* obj) {
 
 	GLint firstIndexPosition = firstIndices[place]; // position of first index of object in combinedIndices
 	GLint firstVertexPosition = firstVertices[place]; // position of first vertex of object in combinedVertices
-	GLsizei numIndex = inds.size(); // amount of indices of object
-	GLsizei numVertex = verts.size(); // amount of vertices of object
-
+	GLsizei numIndex = numIndices[place]; // amount of indices of object
+	GLsizei numVertex = numVertices[place]; // amount of vertices of object
 
 	renderedObjects.erase(it); // Erases from renderedObjects
 
 	firstIndices.erase(firstIndices.begin() + place); // Erases from firstIndices
 	// update firstIndices, so that the first index of all the next objects is correct
 	for (size_t i = place; i < firstIndices.size(); ++i) {
-		firstIndices[i] -= numIndex;
+		firstIndices[i] -= numIndex;	
 	}
 
 	firstVertices.erase(firstVertices.begin() + place); // Erases from firstVertices
@@ -227,6 +256,7 @@ void Renderer::unrenderObject(GameObject* obj) {
 
 	numIndices.erase(numIndices.begin() + place); // Erases from numIndices
 	numVertices.erase(numVertices.begin() + place); // Erases from numVertices
+
 	combinedVertices.erase(combinedVertices.begin() + firstVertexPosition, combinedVertices.begin() + firstVertexPosition + numVertex); // Erases vertices from combinedVertices
 	combinedIndices.erase(combinedIndices.begin() + firstIndexPosition, combinedIndices.begin() + firstIndexPosition + numIndex); // Erases indices from combinedIndices
 
@@ -234,16 +264,63 @@ void Renderer::unrenderObject(GameObject* obj) {
 	for (size_t i = firstIndexPosition; i < combinedIndices.size(); ++i) {
 		combinedIndices[i] -= numVertex;
 	}
-
 }
 
-void Renderer::updateVertices() {
+// Redo combinedVertices vector, re-inserting all object vertices.
+void Renderer::redoVertices() {
 	combinedVertices.clear();
-	for (size_t i = 0; i < objects->size(); ++i) {
-		GameObject* obj = (*objects)[i];
+	for (size_t i = 0; i < objects.size(); ++i) {
+		GameObject* obj = (objects)[i];
 		const auto& verts = obj->getVertices();
 		combinedVertices.insert(combinedVertices.end(), verts.begin(), verts.end());
+
+		renderedObjects = objects; // UNSAFE? Depends on the position this is run in
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, combinedVertices.size() * sizeof(glm::vec3), combinedVertices.data());
+}
+
+// Redo vertices of a specific object, erasing old vertices and re-inserting new ones into combinedVertices vector.
+void Renderer::redoObjVertices(GameObject* object) {
+	auto it = std::find(renderedObjects.begin(), renderedObjects.end(), object);
+	if (it == renderedObjects.end()) {
+		// Object not found in objects, cannot update vertices of something that does not exist!
+		std::cout << "Updating vertices of object that does not exist...?" << std::endl;
+		return;
+	}
+
+	size_t place = std::distance(renderedObjects.begin(), it);
+	const auto& verts = object->getVertices();
+	GLint firstVertexPosition = firstVertices[place];
+	GLsizei numVertex = verts.size();
+
+	combinedVertices.erase(combinedVertices.begin() + firstVertexPosition, combinedVertices.begin() + firstVertexPosition + numVertex);
+	combinedVertices.insert(combinedVertices.begin() + firstVertexPosition, verts.begin(), verts.end());
+}
+
+// Completely wipes everything and re-renders all objects.
+void Renderer::redoAll() {
+	combinedVertices.clear();
+	combinedIndices.clear();
+	firstIndices.clear();
+	firstVertices.clear();
+	numIndices.clear();
+	numVertices.clear();
+
+	renderedObjects.clear();
+	for (size_t i = 0; i < objects.size(); ++i) {
+		GameObject* obj = (objects)[i];
+		renderObject(obj);
+	}
+}
+
+// Unrenders and re-renders an object entirely.
+void Renderer::redoObj(GameObject* object) {
+	auto it = std::find(renderedObjects.begin(), renderedObjects.end(), object);
+	if (it == renderedObjects.end()) {
+		// Object not found in objects, cannot update vertices of something that does not exist!
+		std::cout << "Updating vertices of object that does not exist...?" << std::endl;
+		return;
+	}
+
+	unrenderObject(object);
+	renderObject(object);
 }

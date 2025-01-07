@@ -20,6 +20,9 @@ public:
 		renderer->setCamera(camera);
 
 		player = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "player", false);
+		std::vector<glm::vec3> v = { glm::vec3(0.0f, 0.0f, 0.0f) };
+		std::vector<unsigned int> i = { 0 };
+		player->addVerticesIndices(v, i, false);
 		player->attachCamera(camera);
 		objectManager->addObject(player);
 

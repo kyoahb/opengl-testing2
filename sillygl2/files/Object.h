@@ -6,13 +6,23 @@
 
 class GameObject;
 
-extern bool anyTransformationsThisFrame;
+enum ObjectEvent {
+    No_Event = 0,
+	Added_Object = 1,
+	Removed_Object = 2,
+    Object_Transformation = 3,
+	Object_Vertices_Changed = 4,
+};
+
+extern std::vector<GameObject*> transformedObjects;
+extern std::vector<GameObject*> vertChangedObjects;
 
 class GameObject {
 public:
-	bool transformedThisFrame = false; // If object has been moved, rotated, or scaled this frame, this is true. Useful for quickly determining if an object needs to be re-rendered.
 	bool isCameraAttached = false;
 	bool visible; // If object should be visibly rendered
+
+	ObjectEvent event; // Last event that happened to object
 
     // Handles
     std::string name;
@@ -20,7 +30,7 @@ public:
 
     GameObject(glm::vec3 _position, std::string _name, bool _rendered);
 
-    void setTransformedThisFrame();
+    void setObjectEvent(ObjectEvent e);
 
     glm::vec3& getPosition();
 	glm::vec3& getRotation();
@@ -29,7 +39,7 @@ public:
     std::vector<unsigned int>& getIndices();
 	Camera* getAttachedCamera();
 
-	void addVerticesIndices(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices);
+	void addVerticesIndices(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices, bool toRerender);
 
     void move(glm::vec3& change);
     void rotate(glm::vec3& _rotation);

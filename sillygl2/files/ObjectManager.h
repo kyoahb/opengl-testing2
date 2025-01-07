@@ -4,15 +4,10 @@
 #include <string>
 #include <algorithm>
 
-enum Events {
-	Object_Transformation = 0,
-	Added_Object = 1,
-	Removed_Object = 2,
-	Object_Vertices_Changed = 3,
-};
-
 class ObjectManager {
 public:
+	std::vector<GameObject*> addedObjects; // Objects added in the last frame
+	std::vector<GameObject*> removedObjects; // Objects removed in the last frame
     ObjectManager();
 
 	void addObject(GameObject* object); // Adds object to list of objects
@@ -21,7 +16,8 @@ public:
 
 	GameObject* getObjectByName(std::string name); // Returns the first object with the given name
 	std::vector<GameObject*> getObjectListByName(std::string name); // Returns a list of objects with the given name
-	bool anyTransformationsHappened(); // Returns true if any object has been moved, rotated, or scaled this frame
+	std::vector<GameObject*> getObjectsByEvent(ObjectEvent e); // Returns true if any object has been moved, rotated, or scaled this frame
+	void clearEvent(ObjectEvent e); // Clears the event for all objects
 
 	void rotateObjectsR(std::vector<GameObject*>& objects, glm::vec3 rotation); // Rotates objects by the given rotation, faster because it only computes rotation once
 	std::vector<GameObject*>* getObjects(); // Returns the list of objects

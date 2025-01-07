@@ -197,7 +197,7 @@ public:
 			glm::vec3 change = tempRelativeVertex - relativeVertex;
 			relativeVertex = tempRelativeVertex; 
 			vertex += change;
-			object->setTransformedThisFrame(); // Ensure object is updated immediately
+			object->setObjectEvent(Object_Transformation); // Ensure object is updated immediately
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
@@ -229,7 +229,7 @@ public:
 			changed = false;
 			glm::vec3 change = tempVertex - vertex; // Detect difference, and apply it to the vertex
 			vertex = tempVertex; // Update vertex with tempVertex
-			object->setTransformedThisFrame(); // Ensure object is updated immediately
+			object->setObjectEvent(Object_Transformation); // Ensure object is updated immediately
 		}
 
 		ImGui::PopID();
@@ -260,8 +260,8 @@ public:
 						if (ImGui::Button("Add Vertex")) {
 							std::vector<unsigned int> newIndices = { (unsigned int)vertices.size() };
 							std::vector<glm::vec3> newVerts = { glm::vec3(0.0f, 0.0f, 0.0f) };
-							object->addVerticesIndices(newVerts, newIndices);
-							object->setTransformedThisFrame();
+							object->addVerticesIndices(newVerts, newIndices, true);
+							object->setObjectEvent(Object_Vertices_Changed);
 						}
 						glm::vec3 objectPosition = object->getPosition();
 						// Display vertices
@@ -312,6 +312,7 @@ public:
 			framerate = accumulatedFrames / accumulatedTime;
 			accumulatedFrames = 0;
 			accumulatedTime = 0.0f;
+			std::cout << framerate << std::endl;
 		}
 
 	}
