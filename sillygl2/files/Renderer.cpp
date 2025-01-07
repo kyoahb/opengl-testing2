@@ -1,12 +1,13 @@
 #include "Renderer.h"
 
 Renderer::Renderer(ObjectManager* objManager, unsigned int scr_width, unsigned int scr_height) :
-    shader(Shader("shaders/shader.vs", "shaders/shader.fs")),
+    shader(Shader("shaders/shader.vert", "shaders/shader.frag")),
     projection(glm::mat4(1.0f)),
     model(glm::mat4(1.0f)),
     objectManager(objManager),
     SCR_WIDTH(scr_width),
-    SCR_HEIGHT(scr_height)
+    SCR_HEIGHT(scr_height),
+	mesh(createTestMesh())
 {
     objectsptr = objectManager->getObjects();
     renderedObjects = {};
@@ -14,6 +15,8 @@ Renderer::Renderer(ObjectManager* objManager, unsigned int scr_width, unsigned i
     // Setup globally applied matrices
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     projection = glm::perspective(glm::radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+	//texture = createTestTexture();
 
     // Using EBO buffers, so vertices can be reused
     // Indices are always needed with vertices in this approach.
@@ -46,6 +49,66 @@ Renderer::Renderer(ObjectManager* objManager, unsigned int scr_width, unsigned i
 void Renderer::setCamera(Camera* camera) {
     globalCamera = camera;
     view = &(globalCamera->view);
+}
+
+void Renderer::renderTest() {
+	glClearColor(0.5f, 0.0f, 0.5f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (view) {
+		shader.setMat4("view", *view);
+	}
+
+	mesh.draw(shader);
+}
+
+Mesh Renderer::createTestMesh() {
+	std::vector<Vertex> vertices = {
+		Vertex(glm::vec3(-10.5f, -10.5f, 10.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
+		Vertex(glm::vec3(10.5f, -10.5f, 10.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
+		Vertex(glm::vec3(10.5f, 10.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
+		Vertex(glm::vec3(-10.5f, 10.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f))
+	};
+
+	std::vector<unsigned int> indices = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	std::vector<Texture> textures = { createTestTexture() };
+	Mesh mesh = Mesh(vertices, indices, textures);
+	return mesh;
+}
+
+
+Texture Renderer::createTestTexture() {
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	// Texture parameters
+	// Texture wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	// Texture filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Mipmapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("textures/grass.jpeg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+
+	return Texture(texture, "texture_diffuse", "textures/grass.jpeg");
 }
 
 void Renderer::render() {

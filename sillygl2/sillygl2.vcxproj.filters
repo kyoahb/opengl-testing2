@@ -19,7 +19,7 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{9f4596a5-6002-4da9-96f8-46d170c23f24}</UniqueIdentifier>
     </Filter>
-    <Filter Include="imgui#">
+    <Filter Include="dependencies">
       <UniqueIdentifier>{1d59d0f4-4532-4ca1-9768-50274b019479}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -58,31 +58,37 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui.cpp">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_demo.cpp">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_draw.cpp">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_impl_glfw.cpp">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_impl_opengl3.cpp">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_tables.cpp">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClCompile>
     <ClCompile Include="include\imgui\imgui_widgets.cpp">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClCompile>
     <ClCompile Include="Manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Menu.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="files\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="include\stbimage\stb_image.cpp">
+      <Filter>dependencies</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -120,31 +126,31 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imconfig.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui_impl_glfw.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui_impl_opengl3.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui_internal.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imstb_rectpack.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imstb_textedit.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imstb_truetype.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="include\imgui\imgui_impl_opengl3_loader.h">
-      <Filter>imgui#</Filter>
+      <Filter>dependencies</Filter>
     </ClInclude>
     <ClInclude Include="Manager.h">
       <Filter>Header Files</Filter>
@@ -155,12 +161,24 @@
     <ClInclude Include="engine.h">
       <Filter>GameScripts</Filter>
     </ClInclude>
+    <ClInclude Include="files\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="files\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="files\Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stb image\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\shader.fs">
+    <None Include="shaders\shader.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\shader.vs">
+    <None Include="shaders\shader.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

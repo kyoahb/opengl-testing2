@@ -137,6 +137,7 @@
     <ClCompile Include="dlls\glad.c" />
     <ClCompile Include="files\Camera.cpp" />
     <ClCompile Include="files\Input.cpp" />
+    <ClCompile Include="files\Mesh.cpp" />
     <ClCompile Include="files\Object.cpp" />
     <ClCompile Include="files\ObjectManager.cpp" />
     <ClCompile Include="files\Renderer.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="include\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="include\stbimage\stb_image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Manager.cpp" />
     <ClCompile Include="Menu.cpp" />
@@ -159,13 +161,16 @@
     <ClInclude Include="engine.h" />
     <ClInclude Include="files\Camera.h" />
     <ClInclude Include="files\Input.h" />
+    <ClInclude Include="files\Mesh.h" />
     <ClInclude Include="files\Object.h" />
     <ClInclude Include="files\ObjectManager.h" />
     <ClInclude Include="files\Renderer.h" />
     <ClInclude Include="files\Script.h" />
     <ClInclude Include="files\ScriptManager.h" />
     <ClInclude Include="files\Shader_l.h" />
+    <ClInclude Include="files\Texture.h" />
     <ClInclude Include="files\Useful.h" />
+    <ClInclude Include="files\Vertex.h" />
     <ClInclude Include="gamescripts\control.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
@@ -176,13 +181,14 @@
     <ClInclude Include="include\imgui\imstb_rectpack.h" />
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
+    <ClInclude Include="include\stb image\stb_image.h" />
     <ClInclude Include="Manager.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="MenuManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\shader.fs" />
-    <None Include="shaders\shader.vs" />
+    <None Include="shaders\shader.frag" />
+    <None Include="shaders\shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

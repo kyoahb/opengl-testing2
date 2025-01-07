@@ -3,7 +3,7 @@
 #include "Camera.h"
 #include <vector>
 #include <string>
-
+#include "Vertex.h"
 class GameObject;
 
 enum ObjectEvent {
@@ -55,6 +55,7 @@ private:
     glm::vec3 position;
     glm::vec3 rotation;
     Camera* attachedCamera;
+    std::vector<Vertex> vertexData;
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
     std::vector<GameObject*> children;

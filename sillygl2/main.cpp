@@ -88,7 +88,7 @@ int main() {
 
         // render
         // ------
-        renderer.render();
+        renderer.renderTest();
         
 
         menuManager.frameEnd();

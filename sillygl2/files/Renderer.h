@@ -4,18 +4,22 @@
 #include "Useful.h"
 #include <random>
 #include <iostream>
+#include "stbimage/stb_image.h"
 #include "Camera.h"
 #include "Shader_l.h"
 #include "Object.h"
 #include "ObjectManager.h"
+#include "Texture.h"
+#include "Vertex.h"
+#include "Mesh.h"
 
 class Renderer {
 public:
     Shader shader;
+	Texture texture;
 	Renderer(ObjectManager* objManager, unsigned int scr_width, unsigned int scr_height);
 	void setCamera(Camera* camera); // Attach camera to renderer
 	void render(); // Render: run every frame
-
 
 	void renderObject(GameObject* object); // Add object to rendered list
 	void unrenderObject(GameObject* obj); // Remove object from rendered list
@@ -24,8 +28,14 @@ public:
 	void redoAll(); // Update all objects -> used for transformations where vertices/indices are added/removed
 	void redoObj(GameObject* obj); // Update object -> used for transformations where vertices/indices are added/removed
 
+	void renderTest();
+	Texture createTestTexture();
+	Mesh createTestMesh();
 
 private:
+	Mesh mesh;
+
+
     std::vector<GameObject*>* objectsptr;
 	std::vector<GameObject*> objects;
 	std::vector<GameObject*> renderedObjects;
