@@ -9,7 +9,7 @@
 class Camera
 {
 public:
-
+	bool updatedView = false; // If view matrix has been updated
 	glm::mat4 view = glm::mat4(1.0f); // View matrix
 	Camera(); 
 	void changeDirection(glm::vec3 changeDirection); // Change direction of camera and resulting cameraFront position and view matrix
@@ -21,6 +21,7 @@ public:
 
 private:
 	void updateView(); // Update view matrix
+
 	glm::vec3 cameraFront; // Position always in front
 	glm::vec3 cameraUp; // Position always above
 	glm::vec3 position; // camera position as a vertex in the space

@@ -143,6 +143,7 @@
     <ClCompile Include="files\Renderer.cpp" />
     <ClCompile Include="files\Script.cpp" />
     <ClCompile Include="files\ScriptManager.cpp" />
+    <ClCompile Include="files\Texture.cpp" />
     <ClCompile Include="files\Useful.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="Manager.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="MenuManager.cpp" />
+    <ClCompile Include="MeshManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine.h" />
@@ -185,6 +187,7 @@
     <ClInclude Include="Manager.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="MenuManager.h" />
+    <ClInclude Include="MeshManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag" />

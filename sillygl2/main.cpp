@@ -8,6 +8,7 @@
 #include "Input.h"
 #include "Renderer.h"
 #include "ObjectManager.h"
+#include "MeshManager.h"
 #include "ScriptManager.h"
 #include "Manager.h"
 // Game Scripts
@@ -50,12 +51,13 @@ int main() {
     }
     // load globals
     ObjectManager objectManager;
+    MeshManager meshManager;
     InputManager inputManager(window);
     ScriptManager scriptManager;
     MenuManager menuManager(window);
-    Renderer renderer(&objectManager, SCR_WIDTH, SCR_HEIGHT);
+    Renderer renderer(&meshManager, SCR_WIDTH, SCR_HEIGHT);
 
-    Manager::getInstance().initialize(&inputManager, &objectManager, &renderer, &menuManager, window);
+    Manager::getInstance().initialize(&inputManager, &objectManager, &meshManager, &renderer, &menuManager, window);
 
     scriptManager.registerScript(new ControlScript());
     scriptManager.registerScript(new EngineScript());

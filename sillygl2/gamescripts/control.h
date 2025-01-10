@@ -11,6 +11,7 @@ public:
     void onStart() override {
 		Renderer* renderer = Manager::getInstance().getRenderer();
 		ObjectManager* objectManager = Manager::getInstance().getObjectManager();
+		MeshManager* meshManager = Manager::getInstance().getMeshManager();
 		InputManager* inputManager = Manager::getInstance().getInputManager();
 		MenuManager* menuManager = Manager::getInstance().getMenuManager();
 		GLFWwindow* window = Manager::getInstance().getWindow();
@@ -19,12 +20,9 @@ public:
 		camera = new Camera();
 		renderer->setCamera(camera);
 
-		player = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "player", false);
-		std::vector<glm::vec3> v = { glm::vec3(0.0f, 0.0f, 0.0f) };
-		std::vector<unsigned int> i = { 0 };
-		player->addVerticesIndices(v, i, false);
+		player = new Mesh({}, {}, {}, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f), "player");
 		player->attachCamera(camera);
-		objectManager->addObject(player);
+		meshManager->addMesh(player);
 
 		Key* forward = new Key(GLFW_KEY_W);
 		forward->holdFunction = [this]() { this->movement("forward"); };
@@ -52,35 +50,35 @@ public:
 
 
 		Key* addCube = new Key(GLFW_KEY_E);
-		addCube->pressFunction = [this, objectManager]() {
-			objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
+		addCube->pressFunction = [this, meshManager]() {
+			meshManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
 			};
 		inputManager->addKey(addCube);
 
 		Key* add2250Cubes = new Key(GLFW_KEY_P);
-		add2250Cubes->pressFunction = [this, objectManager]() {
-			for (int i = 0; i < 2250; i++) objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
+		add2250Cubes->pressFunction = [this, meshManager]() {
+			for (int i = 0; i < 2250; i++) meshManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
 			};
 		inputManager->addKey(add2250Cubes);
 
 		Key* removeCube = new Key(GLFW_KEY_F);
-		removeCube->pressFunction = [this, objectManager]() {
-			objectManager->destroyObject(objectManager->getObjectByName("cube"));
+		removeCube->pressFunction = [this, meshManager]() {
+			meshManager->removeMesh(meshManager->getMeshesByName("cube")[0]);
 			};
 		inputManager->addKey(removeCube);
 
 		Key* rotateCubes = new Key(GLFW_KEY_Q);
-		rotateCubes->holdFunction = [this, objectManager]() {
+		rotateCubes->holdFunction = [this, meshManager]() {
 			glm::vec3 rotation = (float)dTime * glm::vec3(360.0f, 0.0f, 0.0f);
-			std::vector<GameObject*> cubes = objectManager->getObjectListByName("cube");
-			objectManager->rotateObjectsR(cubes, rotation);
+			std::vector<Mesh*> cubes = meshManager->getMeshesByName("cube");
+			for (Mesh* cube : cubes) cube->rotate(rotation);
 			};
 		inputManager->addKey(rotateCubes);
 
 		Key* rotateSingularCube = new Key(GLFW_KEY_R);
-		rotateSingularCube->holdFunction = [this, objectManager]() {
+		rotateSingularCube->holdFunction = [this, meshManager]() {
 			glm::vec3 rotation = glm::vec3(0.0f, 1.0f, 0.0f);
-			objectManager->getObjectByName("cube")->rotate(rotation);
+			meshManager->getMeshesByName("cube")[0]->rotate(rotation);
 			};
 		inputManager->addKey(rotateSingularCube);
 
@@ -147,5 +145,5 @@ private:
 	double dTime = 0.0f;
 	float speed = 5.0f;
 	Camera* camera;
-	GameObject* player;
+	Mesh* player;
 };

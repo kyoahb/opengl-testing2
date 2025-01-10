@@ -33,6 +33,7 @@ void Camera::move(glm::vec3 change) {
 
 void Camera::updateView() {
 	view = glm::lookAt(position, position + cameraFront, cameraUp);
+	updatedView = true;
 }
 
 glm::vec3& Camera::getPosition() {
