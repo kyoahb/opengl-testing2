@@ -11,7 +11,7 @@ public:
     // mesh data
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures;
+    std::vector<Texture*> textures;
 
 	std::vector<Mesh*> children;
     Camera* attachedCamera;
@@ -23,7 +23,7 @@ public:
     glm::vec3 scale;
     glm::vec3 rotation;
 
-    Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures, glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name); // Automatically assigned name and position
+    Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name); // Automatically assigned name and position
 
 	void move(glm::vec3 change);
 	void rotate(glm::vec3 _rotation);
@@ -32,21 +32,16 @@ public:
 	void attachCamera(Camera* camera);
 
     void draw(Shader& shader);
-    void drawSingleTexture(Shader& shader);
+    void drawSingleTexture();
 
     void resendVerticesIndices();
     void resendModelMatrix();
-	void formSendModelMatrix();
     void formModelMatrix();
 private:
     //  render data
     unsigned int VAO, VBO, EBO, modelBuffer;
     glm::mat4 model;
-
-    glm::vec3 mPosition;
-	glm::vec3 mScale;
-	glm::vec3 mRotation;
-
+	bool modifiedThisFrame = false; // Whether any transformations have been applied to the mesh this frame, which should be reflected in the model matrix.
 
     void setupMesh();
 };

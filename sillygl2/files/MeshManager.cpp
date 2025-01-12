@@ -1,7 +1,11 @@
 #include "MeshManager.h"
 
-MeshManager::MeshManager() : meshes({}) {
+MeshManager::MeshManager(TextureManager* _textureManager) : meshes({}), textureManager(_textureManager) {
 
+}
+
+void MeshManager::addInstanceGroup(InstanceGroup* instanceGroup) {
+	instanceGroups.push_back(instanceGroup);
 }
 
 void MeshManager::addMesh(Mesh* mesh) {
@@ -16,6 +20,10 @@ void MeshManager::removeMesh(Mesh* mesh) {
 
 std::vector<Mesh*>* MeshManager::getMeshes() {
 	return &meshes;
+}
+
+std::vector<InstanceGroup*>* MeshManager::getInstanceGroups() {
+	return &instanceGroups;
 }
 
 Mesh* MeshManager::getMeshById(unsigned int _id) {
@@ -40,7 +48,7 @@ std::vector<Mesh*> MeshManager::getMeshesByName(std::string name) {
 void MeshManager::addCube(float width, float height, float depth, glm::vec3 centre, std::string name) {
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Texture> textures;
+	std::vector<Texture*> textures;
 
 	vertices = {
 		Vertex(glm::vec3(-width / 2, -height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
@@ -67,8 +75,8 @@ void MeshManager::addCube(float width, float height, float depth, glm::vec3 cent
 		3, 2, 6,
 		6, 7, 3
 	};
-
-	textures = { Texture(TextureType::Diffuse, "textures/hlbox.jpg") };
+	Texture* texture = textureManager->createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
+	textures = { texture };
 
 	Mesh* mesh = new Mesh(vertices, indices, textures, centre, glm::vec3(0.0f), glm::vec3(1.0f), "cube");
 

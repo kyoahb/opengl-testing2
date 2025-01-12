@@ -17,6 +17,10 @@ MeshManager* Manager::getMeshManager() {
 	return meshManager;
 }
 
+TextureManager* Manager::getTextureManager() {
+	return textureManager;
+}
+
 Renderer* Manager::getRenderer() {
     return renderer;
 }
@@ -29,15 +33,16 @@ GLFWwindow* Manager::getWindow() {
 	return window;
 }
 
-void Manager::initialize(InputManager* inputMgr, ObjectManager* objectMgr, MeshManager* meshMgr, Renderer* rend, MenuManager* menuMgr, GLFWwindow* wind) {
+void Manager::initialize(InputManager* inputMgr, ObjectManager* objectMgr, MeshManager* meshMgr, TextureManager* textureMgr, Renderer* rend, MenuManager* menuMgr, GLFWwindow* wind) {
     inputManager = inputMgr;
     objectManager = objectMgr;
+    textureManager = textureMgr;
     meshManager = meshMgr;
     renderer = rend;
     menuManager = menuMgr;
     window = wind;
 }
 
-Manager::Manager() : inputManager(nullptr), objectManager(nullptr), meshManager(nullptr), renderer(nullptr), menuManager(nullptr), window(nullptr) {}
+Manager::Manager() : inputManager(nullptr), objectManager(nullptr), meshManager(nullptr), textureManager(nullptr), renderer(nullptr), menuManager(nullptr), window(nullptr) {}
 
 Manager::~Manager() = default;

@@ -8,24 +8,27 @@
 #include "Camera.h"
 #include "Shader_l.h"
 #include "Object.h"
-#include "Texture.h"
+#include "TextureManager.h"
 #include "Vertex.h"
-#include "../MeshManager.h"
+#include "MeshManager.h"
+
+class Manager;
 
 class Renderer {
 public:
     Shader shader;
 	Texture texture;
-	Renderer(MeshManager* _meshManager, unsigned int scr_width, unsigned int scr_height);
+	Renderer(MeshManager* _meshManager);
 	void setCamera(Camera* camera); // Attach camera to renderer
 
 	void renderTest();
+	void preRenderTest();
 	Texture createTestTexture();
 
 private:
     float const vecSize = sizeof(float) * 3;
-	unsigned int SCR_WIDTH; // Width of screen
-	unsigned int SCR_HEIGHT; // Height of screen
+	unsigned int SCR_WIDTH = 1280; // Width of screen
+	unsigned int SCR_HEIGHT = 720; // Height of screen
 	Camera* globalCamera; // Camera to render from (if exists)
 	MeshManager* meshManager; // Object Manager to get objects from
 	unsigned int VAO, VBO, EBO; // Vertex Array Object, Vertex Buffer Object, Element Buffer Object

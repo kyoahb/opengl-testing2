@@ -1,10 +1,11 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures, glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name)
+Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name)
     : vertices(_vertices), indices(_indices), textures(_textures), position(_position), scale(_scale), rotation(_rotation), model(glm::mat4(1.0f)), name(_name), id(0), children({}), attachedCamera(nullptr)
 {
 	setupMesh();
-    formSendModelMatrix();
+    formModelMatrix();
+    resendModelMatrix();
 }
 
 void Mesh::setupMesh() {
@@ -54,7 +55,7 @@ void Mesh::setupMesh() {
 
 void Mesh::move(glm::vec3 change) {
 	position += change;
-	formSendModelMatrix();
+    modifiedThisFrame = true;
 
 	for (Mesh* child : children) {
 		child->move(change);
@@ -67,7 +68,7 @@ void Mesh::move(glm::vec3 change) {
 void Mesh::rotate(glm::vec3 _rotation) {
 	rotation += _rotation;
 	rotation = vec3Overfill(rotation, 0.0f, 360.0f);
-	formSendModelMatrix();
+    modifiedThisFrame = true;
 
 	for (Mesh* child : children) {
 		child->rotate(_rotation);
@@ -79,7 +80,7 @@ void Mesh::rotate(glm::vec3 _rotation) {
 
 void Mesh::addScale(glm::vec3 _scale) {
 	scale += _scale;
-	formSendModelMatrix();
+    modifiedThisFrame = true;
 
 	for (Mesh* child : children) {
 		child->addScale(_scale);
@@ -101,7 +102,7 @@ void Mesh::draw(Shader& shader)
         // retrieve texture number (the N in diffuse_textureN)
         std::string number;
         std::string typeString;
-		Texture& currentTexture = textures[i];
+		Texture* currentTexture = textures[i];
         /*
         TextureType type = currentTexture.type;
         if (type == TextureType::Diffuse) {
@@ -117,7 +118,7 @@ void Mesh::draw(Shader& shader)
 
         //shader.setInt(("material." + typeString + number).c_str(), i);
 		//shader.setInt("material.diffuse", 0);
-        glBindTexture(GL_TEXTURE_2D, currentTexture.id);
+        glBindTexture(GL_TEXTURE_2D, currentTexture->id);
     }
     glActiveTexture(GL_TEXTURE0);
 
@@ -130,25 +131,21 @@ void Mesh::draw(Shader& shader)
 }
 
 // Draws but only with a maximum of one texture for simplicity.
-void Mesh::drawSingleTexture(Shader& shader) {
+void Mesh::drawSingleTexture() {
     if (!textures.empty()) {
-        glBindTexture(GL_TEXTURE_2D, textures[0].id);
+        glBindTexture(GL_TEXTURE_2D, textures[0]->id);
 	}
 
-    //resend model if necessary
-    //if (mPosition != position || mScale != scale || mRotation != rotation) {
-    //    formSendModelMatrix();
-    //}
+	if (modifiedThisFrame) {
+        modifiedThisFrame = false;
+		formModelMatrix();
+		resendModelMatrix();
+	}
 
 	// draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-}
-
-void Mesh::formSendModelMatrix() {
-	formModelMatrix();
-	resendModelMatrix();
 }
 
 void Mesh::resendModelMatrix() {
@@ -171,18 +168,13 @@ void Mesh::resendVerticesIndices() {
 }
 
 void Mesh::formModelMatrix() {
-    // calculate new model
+    // calculate model
     glm::mat4 newModel = glm::mat4(1.0f);
     newModel = glm::translate(newModel, position);
     newModel = glm::scale(newModel, scale);
     newModel = glm::rotate(newModel, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     newModel = glm::rotate(newModel, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
     newModel = glm::rotate(newModel, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    // set rendered flags
-    mPosition = position;
-    mScale = scale;
-    mRotation = rotation;
 
     // update model
     model = newModel;

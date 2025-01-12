@@ -1,3 +1,14 @@
+#define GLM_FORCE_SSE2         // Enable SSE2
+#define GLM_FORCE_SSE3         // Enable SSE3
+#define GLM_FORCE_SSSE3        // Enable SSSE3
+#define GLM_FORCE_SSE4_1       // Enable SSE4.1
+#define GLM_FORCE_SSE4_2       // Enable SSE4.2
+#define GLM_FORCE_AVX          // Enable AVX
+#define GLM_FORCE_AVX2         // Enable AVX2
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES  // Align types to 16 bytes
+
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "MenuManager.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -51,13 +62,14 @@ int main() {
     }
     // load globals
     ObjectManager objectManager;
-    MeshManager meshManager;
+    TextureManager textureManager;
+    MeshManager meshManager(&textureManager);
     InputManager inputManager(window);
     ScriptManager scriptManager;
     MenuManager menuManager(window);
-    Renderer renderer(&meshManager, SCR_WIDTH, SCR_HEIGHT);
+    Renderer renderer(&meshManager);
 
-    Manager::getInstance().initialize(&inputManager, &objectManager, &meshManager, &renderer, &menuManager, window);
+    Manager::getInstance().initialize(&inputManager, &objectManager, &meshManager, &textureManager, &renderer, &menuManager, window);
 
     scriptManager.registerScript(new ControlScript());
     scriptManager.registerScript(new EngineScript());
