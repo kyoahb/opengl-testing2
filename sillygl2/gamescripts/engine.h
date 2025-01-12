@@ -3,10 +3,20 @@
 #include "Script.h"
 #include <iostream>
 
+
+//template<typename T>
+//concept Object = requires(T a) {
+//	{ a->position } -> std::same_as<glm::vec3>;
+//};
+
+
 class EngineScript : public Script {
 public:
+
+
 	Renderer* renderer;
 	ObjectManager* objectManager;
+	MeshManager* meshManager;
 	InputManager* inputManager;
 	MenuManager* menuManager;
 	GLFWwindow* window;
@@ -53,6 +63,7 @@ public:
 	void onStart() override {
 		renderer = Manager::getInstance().getRenderer();
 		objectManager = Manager::getInstance().getObjectManager();
+		meshManager = Manager::getInstance().getMeshManager();
 		inputManager = Manager::getInstance().getInputManager();
 		menuManager = Manager::getInstance().getMenuManager();
 		window = Manager::getInstance().getWindow();
@@ -75,18 +86,6 @@ public:
 			}
 		};
 		inputManager->addKey(toggleInput);
-
-		Key* testKey = new Key(GLFW_KEY_T);
-		testKey->pressFunction = [this]() {
-			GameObject* parent = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "parent", false);
-			GameObject* child = new GameObject(glm::vec3(0.0f, 0.0f, 0.0f), "child", false);
-			parent->attachChild(child);
-			objectManager->addObject(parent);
-			objectManager->addObject(child);
-			};
-		inputManager->addKey(testKey);
-
-
 
 		// Setup Existing Demo Window as a window
 		Menu* demoMenu = new Menu([]() {
@@ -126,7 +125,7 @@ public:
 
 			ImGui::Checkbox("Vertices are relative", &verticesAreRelative);
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
-				ImGui::SetTooltip("Vertices are subtracted by object position.");
+				ImGui::SetTooltip("If off, vertices are added to their position to see their place in world space.");
 
 			ImGui::Text("FPS: %.1f", framerate); 
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
@@ -134,8 +133,20 @@ public:
 
 			if (ImGui::CollapsingHeader("See Objects")) {
 				ImGui::Text("Number of Objects: %zu", objects.size());
-				if (ImGui::TreeNode("Objects")) {
-					objectTree(objects, verticesAreRelative);
+				if (ImGui::TreeNode("Meshes")) {
+					std::vector<Mesh*>* meshes_ptr = meshManager->getMeshes();
+					ImGui::TreePop();
+				}
+				if (ImGui::TreeNode("Instances")) {
+					std::vector<InstanceGroup*>* instanceGroups_ptr = meshManager->getInstanceGroups();
+					for (InstanceGroup* instanceGroup : *instanceGroups_ptr) {
+						std::string name = instanceGroup->name + "##xx";
+
+						if (ImGui::TreeNode((name).c_str())) {
+							instanceGroupTree(instanceGroup, verticesAreRelative);
+							ImGui::TreePop();
+						}
+					}
 					ImGui::TreePop();
 				}
 
@@ -144,165 +155,192 @@ public:
 			ImGui::End();
 			}, "Debug");
 		menuManager->addMenu(debugMenu);
-		}
+	}
 
-	void PositionInputV3(GameObject* object) {
+	template <typename T>
+	void PositionInputV3(T* object) {
 		ImGui::PushItemWidth(100); // Input fields have a max width 
-		glm::vec3 tempPosition = object->getPosition(); // Copy of position
+		glm::vec3 tempPosition = object->position; // Copy of position
 		float smallStep = 1.0f;
 		float largeStep = 10.0f;
 		// This way of using an if-statement with all three inputs all in one makes it impossible to put it on a single line. Check solution for vertex inputs below.
 		if (ImGui::InputFloat("X##xx", &tempPosition.x, smallStep, largeStep, "%.1f") || ImGui::InputFloat("Y##xx", &tempPosition.y, smallStep, largeStep, "%.1f") || ImGui::InputFloat("Z##xx", &tempPosition.z, smallStep, largeStep, "%.1f")) {
-			glm::vec3 change = tempPosition - object->getPosition();
+			glm::vec3 change = tempPosition - object->position;
 			object->move(change);
 
 		}
 		ImGui::PopItemWidth();
 
 	}
-
-	void RotationDragV3(GameObject* object) {
+	
+	template <typename T>
+	void RotationDragV3(T* object) {
 		ImGui::PushItemWidth(100); // Input fields have a max width 
-		glm::vec3 tempRotation = object->getRotation(); // Copy of rotation
+		glm::vec3 tempRotation = glm::degrees(glm::eulerAngles(object->rotation)); // Copy of rotation
 		if (ImGui::DragFloat("Pitch##xx", &tempRotation.x, 0.1f, 0.0f, 360.0f, "%.1f") || ImGui::DragFloat("Yaw##xx", &tempRotation.y, 0.1f, 0.0f, 360.0f, "%.1f") || ImGui::DragFloat("Roll##xx", &tempRotation.z, 0.1f, 0.0f, 360.0f, "%.1f")) {
-			glm::vec3 change = tempRotation - object->getRotation();
-			object->rotate(change);
+			glm::vec3 change = tempRotation - glm::degrees(glm::eulerAngles(object->rotation));
+			object->rotateEuler(change);
 
 		}
 		ImGui::PopItemWidth();
 	}
 
-	void RelativeVertexInputV3(unsigned int index, glm::vec3& vertex, glm::vec3& relativeVertex, GameObject* object) {
+	template <typename T>
+	void ScaleDragV3(T* object) {
+		ImGui::PushItemWidth(100); // Input fields have a max width 
+		glm::vec3 tempScale = object->scale; // Copy of scale
+		if (ImGui::DragFloat("X##xx", &tempScale.x, 0.1f, 0.0f, 100.0f, "%.1f") || ImGui::DragFloat("Y##xx", &tempScale.y, 0.1f, 0.0f, 100.0f, "%.1f") || ImGui::DragFloat("Z##xx", &tempScale.z, 0.1f, 0.0f, 100.0f, "%.1f")) {
+			glm::vec3 change = tempScale - object->scale;
+			object->addScale(change);
+		}
+		ImGui::PopItemWidth();
+	}
+
+	template <typename T>
+	void VertexInputV3(unsigned int index, Vertex& vertex, T* object, bool relative) {
 		ImGui::PushItemWidth(50); // Input fields have a max width 
 		float speed = 0.01f; // Speed of input change
 		float min = 0.0f; // No minimum
 		float max = 0.0f; // No maximum
-		glm::vec3 tempRelativeVertex = relativeVertex; // Copy of pre-change RELATIVE vertex
 		bool changed = false; // Flag tracks change of inputs
+
+		Vertex tempVertex = vertex; // Copy of pre-change vertex
+		if(relative){
+			tempVertex.position += object->position;
+		}
 		ImGui::PushID(index);
 
 		// Input for x
-		changed |= ImGui::DragFloat("x", &tempRelativeVertex.x, speed, min, max, "%.2f");
+		changed |= ImGui::DragFloat("x", &tempVertex.position.x, speed, min, max, "%.2f");
 		ImGui::SameLine();
 
 		// Input for y
-		changed |= ImGui::DragFloat("y", &tempRelativeVertex.y, speed, min, max, "%.2f");
+		changed |= ImGui::DragFloat("y", &tempVertex.position.y, speed, min, max, "%.2f");
 		ImGui::SameLine();
 
 		// Input for z
-		changed |= ImGui::DragFloat("z", &tempRelativeVertex.z, speed, min, max, "%.2f");
+		changed |= ImGui::DragFloat("z", &tempVertex.position.z, speed, min, max, "%.2f");
 
-		if (changed) {
+		if (changed && relative) {
 			changed = false; // Reset flag
-			glm::vec3 change = tempRelativeVertex - relativeVertex;
-			relativeVertex = tempRelativeVertex; 
-			vertex += change;
-			object->setObjectEvent(Object_Transformation); // Ensure object is updated immediately
+			vertex.position = tempVertex.position - object->position;
+			// some update 
+		}
+		else if (changed) {
+			changed = false; // Reset flag
+			vertex.position = tempVertex.position;
+			// some update 
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
 	}
 
-	void VertexInputV3(unsigned int index, glm::vec3& vertex, GameObject* object) {
-		ImGui::PushItemWidth(50); // Input fields have a max width 
-		float speed = 0.01f;
-		float min = 0.0f; // No minimum 
-		float max = 0.0f; // No maximum
-		glm::vec3 tempVertex = vertex; // Copy of pre-change vertex
-		bool changed = false; // Flag tracks change of inputs
 
-		ImGui::PushID(index); // Necessary to allow multiple widgets with same name
 
-		// Input for x
-		changed |= ImGui::DragFloat("x", &tempVertex.x, speed, min, max, "%.2f");
-		ImGui::SameLine(); 
-
-		// Input for y
-		changed |= ImGui::DragFloat("y", &tempVertex.y, speed, min, max, "%.2f");
-		ImGui::SameLine(); 
-
-		// Input for z
-		changed |= ImGui::DragFloat("z", &tempVertex.z, speed, min, max, "%.2f");
-
-		// Check if any value changed
-		if (changed) {
-			changed = false;
-			glm::vec3 change = tempVertex - vertex; // Detect difference, and apply it to the vertex
-			vertex = tempVertex; // Update vertex with tempVertex
-			object->setObjectEvent(Object_Transformation); // Ensure object is updated immediately
-		}
-
-		ImGui::PopID();
-		ImGui::PopItemWidth();
-	}
-
-	void objectTree(std::vector<GameObject*> objects, bool verticesAreRelative) {
-		for (int i = 0; i < objects.size(); i++) {
-			GameObject* object = objects[i];
-			std::string name = object->name;
-			std::string id = std::to_string(object->id);
+	void meshTree(std::vector<Mesh*> meshes, bool verticesAreRelative) {
+		for (int i = 0; i < meshes.size(); i++) {
+			Mesh* mesh = meshes[i];
+			std::string name = mesh->name;
+			std::string id = std::to_string(mesh->id);
 			std::string nameWithID = id + name;
 
 			if (ImGui::TreeNode(nameWithID.c_str())) {
-				ImGui::Checkbox("Visible##xx", &object->visible);
 				ImGui::Text("Name: %s", name.c_str());
 				ImGui::Text("ID: %s", id.c_str());
 				if (ImGui::CollapsingHeader("Position")) {
-					PositionInputV3(object);
+					PositionInputV3(mesh);
 				}
 				if (ImGui::CollapsingHeader("Rotation")) {
-					RotationDragV3(object);
+					RotationDragV3(mesh);
+				}
+				if (ImGui::CollapsingHeader("Scale")) {
+					ScaleDragV3(mesh);
 				}
 
-				std::vector<glm::vec3>& vertices = object->getVertices();
+				std::vector<Vertex>& vertices = mesh->vertices;
 				if (vertices.size() > 0) {
 					if (ImGui::CollapsingHeader("Vertices")) {
-						if (ImGui::Button("Add Vertex")) {
-							std::vector<unsigned int> newIndices = { (unsigned int)vertices.size() };
-							std::vector<glm::vec3> newVerts = { glm::vec3(0.0f, 0.0f, 0.0f) };
-							object->addVerticesIndices(newVerts, newIndices, true);
-							object->setObjectEvent(Object_Vertices_Changed);
-						}
-						glm::vec3 objectPosition = object->getPosition();
+						glm::vec3 objectPosition = mesh->position;
 						// Display vertices
 						for (int i = 0; i < vertices.size(); i++) {
-							glm::vec3& vertex = vertices[i]; // Reference to existing vertex position, will be updated in code
-							if (verticesAreRelative) {
-								glm::vec3 relativeVertex = vertex - objectPosition;
-								ImGui::Text("Relative vertex %d:", i);
-								ImGui::SameLine();
-								RelativeVertexInputV3(i, vertex, relativeVertex, object);
-							}
-							else {
-								ImGui::Text("Vertex %d:", i);
-								ImGui::SameLine();
-								VertexInputV3(i, vertex, object);
-							}
+							Vertex& vertex = vertices[i]; // Reference to existing vertex position, will be updated in code
+							ImGui::Text("Vertex %d:", i);
+							ImGui::SameLine();
+							VertexInputV3(i, vertex, mesh, verticesAreRelative);
 						}
 					}
 				}
 
-				if (object->getChildren().size() > 0) { // Recursive for each child
+				if (mesh->children.size() > 0) { // Recursive for each child
 					if (ImGui::CollapsingHeader("Children")) {
-						objectTree(object->getChildren(), verticesAreRelative);
+						meshTree(mesh->children, verticesAreRelative);
 					}
 				}
-				if (object->isCameraAttached) {
+				if (mesh->attachedCamera != nullptr) {
 					if (ImGui::CollapsingHeader("Attached Camera")) {
-						Camera* camera = object->getAttachedCamera();
+						Camera* camera = mesh->attachedCamera;
 						glm::vec3& cameraPosition = camera->getPosition();
 						glm::vec3& cameraRotation = camera->getDirection();
-						
+
 						ImGui::Text("Position: (%f, %f, %f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 						ImGui::Text("Rotation: (%f, %f, %f)", cameraRotation.x, cameraRotation.y, cameraRotation.z);
 					}
 				}
-				if (ImGui::Button("Delete")) {
-					objectManager->destroyObject(object);
-				}
-				ImGui::TreePop();
 			}
 		}
+	}
+
+	void instanceGroupTree(InstanceGroup* instanceGroup, bool verticesAreRelative) {
+		std::vector<Instance*>* instances = &instanceGroup->instances;
+		if (ImGui::CollapsingHeader("Position")) {
+
+			PositionInputV3(instanceGroup);
+		}
+		if (ImGui::CollapsingHeader("Rotation")) {
+			RotationDragV3(instanceGroup);
+		}
+		if (ImGui::CollapsingHeader("Scale")) {
+			ScaleDragV3(instanceGroup);
+		}
+		if (instanceGroup->vertices.size() > 0) {
+			if (ImGui::CollapsingHeader("Vertices")) {
+				glm::vec3 objectPosition = instanceGroup->position;
+				// Display vertices
+				for (int i = 0; i < instanceGroup->vertices.size(); i++) {
+					Vertex& vertex = instanceGroup->vertices[i]; // Reference to existing vertex position, will be updated in code
+					ImGui::Text("Vertex %d:", i);
+					ImGui::SameLine();
+					VertexInputV3(i, vertex, instanceGroup, verticesAreRelative);
+				}
+			}
+		}
+		if (instances->size() > 0) {
+			if (ImGui::CollapsingHeader("Instances")) {
+				for (int i = 0; i < instances->size(); i++) {
+					Instance* instance = instances->at(i);
+					std::string name = instance->name;
+					std::string id = std::to_string(instance->instanceID);
+					std::string nameWithID = id + name;
+
+					if (ImGui::TreeNode(nameWithID.c_str())) {
+						ImGui::Text("Name: %s", name.c_str());
+						ImGui::Text("ID: %s", id.c_str());
+						if (ImGui::CollapsingHeader("Position")) {
+							PositionInputV3(instance);
+						}
+						if (ImGui::CollapsingHeader("Rotation")) {
+							RotationDragV3(instance);
+						}
+						if (ImGui::CollapsingHeader("Scale")) {
+							ScaleDragV3(instance);
+						}
+						ImGui::TreePop();
+					}
+				}
+			}
+		}
+		
+
 	}
 
 	void onUpdate(double deltaTime) override {

@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name)
-    : vertices(_vertices), indices(_indices), textures(_textures), position(_position), scale(_scale), rotation(_rotation), model(glm::mat4(1.0f)), name(_name), id(0), children({}), attachedCamera(nullptr)
+    : vertices(_vertices), indices(_indices), textures(_textures), position(_position), scale(_scale), rotation(glm::quat(glm::radians(_rotation))), model(glm::mat4(1.0f)), name(_name), id(0), children({}), attachedCamera(nullptr)
 {
 	setupMesh();
     formModelMatrix();
@@ -65,16 +65,29 @@ void Mesh::move(glm::vec3 change) {
 	}
 }
 
-void Mesh::rotate(glm::vec3 _rotation) {
-	rotation += _rotation;
-	rotation = vec3Overfill(rotation, 0.0f, 360.0f);
+void Mesh::rotateEuler(glm::vec3 _rotation) {
+    glm::vec3 filledRot = vec3Overfill(_rotation, 0.0f, 360.0f);
+	glm::quat qRot = glm::quat(glm::radians(filledRot));
+    rotation = qRot * rotation;
     modifiedThisFrame = true;
 
 	for (Mesh* child : children) {
-		child->rotate(_rotation);
+		child->rotateQuat(qRot);
 	}
     if (attachedCamera != nullptr) {
         attachedCamera->changeDirection(_rotation);
+    }
+}
+
+void Mesh::rotateQuat(glm::quat _rotation) {
+    rotation = _rotation * rotation;
+    modifiedThisFrame = true;
+
+    for (Mesh* child : children) {
+        child->rotateQuat(_rotation);
+    }
+    if (attachedCamera != nullptr) {
+        attachedCamera->changeDirection(glm::degrees(glm::eulerAngles(_rotation)));
     }
 }
 
@@ -171,10 +184,8 @@ void Mesh::formModelMatrix() {
     // calculate model
     glm::mat4 newModel = glm::mat4(1.0f);
     newModel = glm::translate(newModel, position);
+	newModel = newModel * glm::toMat4(rotation);
     newModel = glm::scale(newModel, scale);
-    newModel = glm::rotate(newModel, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    newModel = glm::rotate(newModel, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    newModel = glm::rotate(newModel, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     // update model
     model = newModel;

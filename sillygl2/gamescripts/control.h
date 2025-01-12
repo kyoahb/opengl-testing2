@@ -71,14 +71,14 @@ public:
 		rotateCubes->holdFunction = [this, meshManager]() {
 			glm::vec3 rotation = (float)dTime * glm::vec3(360.0f, 0.0f, 0.0f);
 			std::vector<Mesh*> cubes = meshManager->getMeshesByName("cube");
-			for (Mesh* cube : cubes) cube->rotate(rotation);
+			for (Mesh* cube : cubes) cube->rotateEuler(rotation);
 			};
 		inputManager->addKey(rotateCubes);
 
 		Key* rotateSingularCube = new Key(GLFW_KEY_R);
 		rotateSingularCube->holdFunction = [this, meshManager]() {
 			glm::vec3 rotation = glm::vec3(0.0f, 1.0f, 0.0f);
-			meshManager->getMeshesByName("cube")[0]->rotate(rotation);
+			meshManager->getMeshesByName("cube")[0]->rotateEuler(rotation);
 			};
 		inputManager->addKey(rotateSingularCube);
 

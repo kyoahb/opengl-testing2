@@ -16,7 +16,6 @@ class Manager;
 
 class Renderer {
 public:
-    Shader shader;
 	Texture texture;
 	Renderer(MeshManager* _meshManager);
 	void setCamera(Camera* camera); // Attach camera to renderer
@@ -31,7 +30,7 @@ private:
 	unsigned int SCR_HEIGHT = 720; // Height of screen
 	Camera* globalCamera; // Camera to render from (if exists)
 	MeshManager* meshManager; // Object Manager to get objects from
-	unsigned int VAO, VBO, EBO; // Vertex Array Object, Vertex Buffer Object, Element Buffer Object
+	unsigned int UBOmatrices; // Uniform Buffer Object containing view and perspective matrices, shared between all shaders
 	glm::mat4 projection, model; // Projection and Model matrices
     glm::mat4* view; // only initialised if camera is set
 	bool* updatedView;

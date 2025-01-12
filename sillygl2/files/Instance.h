@@ -15,9 +15,6 @@
 #include "Shader_l.h"
 #include "Camera.h"
 #include <glm/gtx/quaternion.hpp>
-
-class InstanceGroup;
-
 class Instance {
 public:
 	bool requestingUpdate = false; // Whether any transformations have been applied to the instance this frame, which should be reflected in the model matrix.
@@ -47,7 +44,8 @@ private:
 	glm::mat4 rotationMatrix = glm::mat4(1.0f);
 	glm::mat4 scaleMatrix = glm::mat4(1.0f);
 
-	glm::vec3 lastPosition = glm::vec3(0.0f);
-	glm::quat lastRotation;
-	glm::vec3 lastScale = glm::vec3(1.0f);
+	// pre set to true to ensure initial matrix calculation is done
+	bool positionChanged = true;
+	bool rotationChanged = true;
+	bool scaleChanged = true;
 };

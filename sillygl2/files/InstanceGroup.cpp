@@ -1,7 +1,8 @@
 #include "InstanceGroup.h"
 
 
-InstanceGroup::InstanceGroup(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, std::string _name) : vertices(_vertices), indices(_indices), textures(_textures), name(_name) {
+InstanceGroup::InstanceGroup(Shader* _shader, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, std::string _name) 
+	: shader(_shader), vertices(_vertices), indices(_indices), textures(_textures), name(_name) {
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
@@ -48,14 +49,50 @@ InstanceGroup::InstanceGroup(std::vector<Vertex> _vertices, std::vector<unsigned
 	glVertexAttribDivisor(6, 1);
 
 	glBindVertexArray(0);
+
+	shader->use();
+	shader->setMat4("group", glm::mat4(10.0f));
 }
 
 void InstanceGroup::draw() {
+	shader->use();
+
 	glBindTexture(GL_TEXTURE_2D, textures[0]->id);
 	glBindVertexArray(VAO);
 	updateInstances();
 	glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instances.size());
 	glBindVertexArray(0);
+}
+
+void InstanceGroup::rotateEuler(glm::vec3 _rotation) {
+	glm::vec3 filledRot = vec3Overfill(_rotation, 0.0f, 360.0f);
+	rotation = glm::quat(glm::radians(filledRot)) * rotation;
+	calcAndSendModel();
+
+}
+
+void InstanceGroup::rotateQuat(glm::quat _rotation) {
+	rotation = _rotation * rotation;
+	calcAndSendModel();
+}
+
+void InstanceGroup::move(glm::vec3 change) {
+	position += change;
+	calcAndSendModel();
+}
+
+void InstanceGroup::addScale(glm::vec3 _scale) {
+	scale += _scale;
+	calcAndSendModel();
+}
+
+void InstanceGroup::calcAndSendModel() {
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, position);
+	model = model * glm::toMat4(rotation);
+	model = glm::scale(model, scale);
+	shader->use();
+	shader->setMat4("group", model);
 }
 
 std::vector<Instance*> InstanceGroup::getInstancesByName(std::string name) {
