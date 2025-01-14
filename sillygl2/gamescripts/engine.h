@@ -4,10 +4,10 @@
 #include <iostream>
 
 
-//template<typename T>
-//concept Object = requires(T a) {
-//	{ a->position } -> std::same_as<glm::vec3>;
-//};
+template<typename T>
+concept Object = requires(T a) {
+	{ a->position } -> std::same_as<glm::vec3>;
+};
 
 
 class EngineScript : public Script {
@@ -15,7 +15,6 @@ public:
 
 
 	Renderer* renderer;
-	ObjectManager* objectManager;
 	MeshManager* meshManager;
 	InputManager* inputManager;
 	MenuManager* menuManager;
@@ -62,7 +61,6 @@ public:
 
 	void onStart() override {
 		renderer = Manager::getInstance().getRenderer();
-		objectManager = Manager::getInstance().getObjectManager();
 		meshManager = Manager::getInstance().getMeshManager();
 		inputManager = Manager::getInstance().getInputManager();
 		menuManager = Manager::getInstance().getMenuManager();
@@ -98,8 +96,6 @@ public:
 		Menu* debugMenu = new Menu([this, debugMenu]() {
 			ImGui::Begin("Debug Menu");
 			ImGui::SetWindowSize(ImVec2(300, 300), ImGuiWindowFlags_AlwaysAutoResize);
-			std::vector<GameObject*>* objects_ptr = objectManager->getObjects();
-			std::vector<GameObject*> objects = *(objects_ptr);
 
 			ImGui::Text("This is a debug menu");
 
@@ -132,15 +128,16 @@ public:
 				ImGui::SetTooltip("Calculated by taking a counter of frames until one second has passed.");
 
 			if (ImGui::CollapsingHeader("See Objects")) {
-				ImGui::Text("Number of Objects: %zu", objects.size());
+				//ImGui::Text("Number of Objects: %zu", objects.size());
 				if (ImGui::TreeNode("Meshes")) {
 					std::vector<Mesh*>* meshes_ptr = meshManager->getMeshes();
+					meshTree(*meshes_ptr, verticesAreRelative);
 					ImGui::TreePop();
 				}
 				if (ImGui::TreeNode("Instances")) {
 					std::vector<InstanceGroup*>* instanceGroups_ptr = meshManager->getInstanceGroups();
 					for (InstanceGroup* instanceGroup : *instanceGroups_ptr) {
-						std::string name = instanceGroup->name + "##xx";
+						std::string name = instanceGroup->getName() + "##xx";
 
 						if (ImGui::TreeNode((name).c_str())) {
 							instanceGroupTree(instanceGroup, verticesAreRelative);
@@ -160,12 +157,12 @@ public:
 	template <typename T>
 	void PositionInputV3(T* object) {
 		ImGui::PushItemWidth(100); // Input fields have a max width 
-		glm::vec3 tempPosition = object->position; // Copy of position
+		glm::vec3 tempPosition = object->getPosition(); // Copy of position
 		float smallStep = 1.0f;
 		float largeStep = 10.0f;
 		// This way of using an if-statement with all three inputs all in one makes it impossible to put it on a single line. Check solution for vertex inputs below.
 		if (ImGui::InputFloat("X##xx", &tempPosition.x, smallStep, largeStep, "%.1f") || ImGui::InputFloat("Y##xx", &tempPosition.y, smallStep, largeStep, "%.1f") || ImGui::InputFloat("Z##xx", &tempPosition.z, smallStep, largeStep, "%.1f")) {
-			glm::vec3 change = tempPosition - object->position;
+			glm::vec3 change = tempPosition - object->getPosition();
 			object->move(change);
 
 		}
@@ -176,10 +173,10 @@ public:
 	template <typename T>
 	void RotationDragV3(T* object) {
 		ImGui::PushItemWidth(100); // Input fields have a max width 
-		glm::vec3 tempRotation = glm::degrees(glm::eulerAngles(object->rotation)); // Copy of rotation
-		if (ImGui::DragFloat("Pitch##xx", &tempRotation.x, 0.1f, 0.0f, 360.0f, "%.1f") || ImGui::DragFloat("Yaw##xx", &tempRotation.y, 0.1f, 0.0f, 360.0f, "%.1f") || ImGui::DragFloat("Roll##xx", &tempRotation.z, 0.1f, 0.0f, 360.0f, "%.1f")) {
-			glm::vec3 change = tempRotation - glm::degrees(glm::eulerAngles(object->rotation));
-			object->rotateEuler(change);
+		glm::quat quatRotation = object->getRotation();
+		glm::vec3 tempRotation = glm::degrees(glm::eulerAngles(quatRotation)); // Copy of rotation
+		if (ImGui::DragFloat("Pitch##xx", &tempRotation.x, 0.1f, -180.0f, 180.0f, "%.1f") || ImGui::DragFloat("Yaw##xx", &tempRotation.y, 0.1f, -180.0f, 180.0f, "%.1f") || ImGui::DragFloat("Roll##xx", &tempRotation.z, 0.1f, -180.0f, 180.0f, "%.1f")) {
+			object->setRotation(glm::quat(glm::radians(tempRotation)));
 
 		}
 		ImGui::PopItemWidth();
@@ -188,9 +185,9 @@ public:
 	template <typename T>
 	void ScaleDragV3(T* object) {
 		ImGui::PushItemWidth(100); // Input fields have a max width 
-		glm::vec3 tempScale = object->scale; // Copy of scale
+		glm::vec3 tempScale = object->getScale(); // Copy of scale
 		if (ImGui::DragFloat("X##xx", &tempScale.x, 0.1f, 0.0f, 100.0f, "%.1f") || ImGui::DragFloat("Y##xx", &tempScale.y, 0.1f, 0.0f, 100.0f, "%.1f") || ImGui::DragFloat("Z##xx", &tempScale.z, 0.1f, 0.0f, 100.0f, "%.1f")) {
-			glm::vec3 change = tempScale - object->scale;
+			glm::vec3 change = tempScale - object->getScale();
 			object->addScale(change);
 		}
 		ImGui::PopItemWidth();
@@ -206,7 +203,7 @@ public:
 
 		Vertex tempVertex = vertex; // Copy of pre-change vertex
 		if(relative){
-			tempVertex.position += object->position;
+			tempVertex.position += object->getPosition();
 		}
 		ImGui::PushID(index);
 
@@ -223,7 +220,7 @@ public:
 
 		if (changed && relative) {
 			changed = false; // Reset flag
-			vertex.position = tempVertex.position - object->position;
+			vertex.position = tempVertex.position - object->getPosition();
 			// some update 
 		}
 		else if (changed) {
@@ -240,8 +237,8 @@ public:
 	void meshTree(std::vector<Mesh*> meshes, bool verticesAreRelative) {
 		for (int i = 0; i < meshes.size(); i++) {
 			Mesh* mesh = meshes[i];
-			std::string name = mesh->name;
-			std::string id = std::to_string(mesh->id);
+			std::string name = mesh->getName();
+			std::string id = std::to_string(mesh->getId());
 			std::string nameWithID = id + name;
 
 			if (ImGui::TreeNode(nameWithID.c_str())) {
@@ -257,10 +254,10 @@ public:
 					ScaleDragV3(mesh);
 				}
 
-				std::vector<Vertex>& vertices = mesh->vertices;
+				std::vector<Vertex> vertices = mesh->getVertices();
 				if (vertices.size() > 0) {
 					if (ImGui::CollapsingHeader("Vertices")) {
-						glm::vec3 objectPosition = mesh->position;
+						glm::vec3 objectPosition = mesh->getPosition();
 						// Display vertices
 						for (int i = 0; i < vertices.size(); i++) {
 							Vertex& vertex = vertices[i]; // Reference to existing vertex position, will be updated in code
@@ -279,19 +276,20 @@ public:
 				if (mesh->attachedCamera != nullptr) {
 					if (ImGui::CollapsingHeader("Attached Camera")) {
 						Camera* camera = mesh->attachedCamera;
-						glm::vec3& cameraPosition = camera->getPosition();
-						glm::vec3& cameraRotation = camera->getDirection();
+						const glm::vec3& cameraPosition = camera->getPosition();
+						const glm::vec3& cameraRotation = camera->getRotation();
 
 						ImGui::Text("Position: (%f, %f, %f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 						ImGui::Text("Rotation: (%f, %f, %f)", cameraRotation.x, cameraRotation.y, cameraRotation.z);
 					}
 				}
+				ImGui::TreePop();
 			}
 		}
 	}
 
 	void instanceGroupTree(InstanceGroup* instanceGroup, bool verticesAreRelative) {
-		std::vector<Instance*>* instances = &instanceGroup->instances;
+		std::vector<Instance*> instances = instanceGroup->getInstances();
 		if (ImGui::CollapsingHeader("Position")) {
 
 			PositionInputV3(instanceGroup);
@@ -302,23 +300,24 @@ public:
 		if (ImGui::CollapsingHeader("Scale")) {
 			ScaleDragV3(instanceGroup);
 		}
-		if (instanceGroup->vertices.size() > 0) {
+		if (instanceGroup->getVertices().size() > 0) {
+			std::vector<Vertex> vertices = instanceGroup->getVertices();
 			if (ImGui::CollapsingHeader("Vertices")) {
-				glm::vec3 objectPosition = instanceGroup->position;
+				glm::vec3 objectPosition = instanceGroup->getPosition();
 				// Display vertices
-				for (int i = 0; i < instanceGroup->vertices.size(); i++) {
-					Vertex& vertex = instanceGroup->vertices[i]; // Reference to existing vertex position, will be updated in code
+				for (int i = 0; i < vertices.size(); i++) {
+					Vertex& vertex = vertices[i]; // Reference to existing vertex position, will be updated in code
 					ImGui::Text("Vertex %d:", i);
 					ImGui::SameLine();
 					VertexInputV3(i, vertex, instanceGroup, verticesAreRelative);
 				}
 			}
 		}
-		if (instances->size() > 0) {
+		if (instances.size() > 0) {
 			if (ImGui::CollapsingHeader("Instances")) {
-				for (int i = 0; i < instances->size(); i++) {
-					Instance* instance = instances->at(i);
-					std::string name = instance->name;
+				for (int i = 0; i < instances.size(); i++) {
+					Instance* instance = instances.at(i);
+					std::string name = instance->getName();
 					std::string id = std::to_string(instance->instanceID);
 					std::string nameWithID = id + name;
 

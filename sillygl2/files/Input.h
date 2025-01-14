@@ -7,7 +7,6 @@
 #include <functional>
 #include "Camera.h"
 #include "Object.h"
-#include "ObjectManager.h"
 #include "Useful.h"
 class Key {
 public:

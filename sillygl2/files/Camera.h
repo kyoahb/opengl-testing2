@@ -12,13 +12,15 @@ public:
 	bool updatedView = false; // If view matrix has been updated
 	glm::mat4 view = glm::mat4(1.0f); // View matrix
 	glm::mat4 perspective; // = glm::perspective(glm::radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f); // Perspective matrix
+	
 	Camera(); 
-	void changeDirection(glm::vec3 changeDirection); // Change direction of camera and resulting cameraFront position and view matrix
+
+	void rotateEuler(glm::vec3 _rotation); // Change direction of camera and resulting cameraFront position and view matrix
 	void move(glm::vec3 change); // Move camera position
 
-	glm::vec3& getPosition();
+	const glm::vec3& getPosition();
 	void setPosition(glm::vec3& _position);
-	glm::vec3& getDirection();
+	const glm::vec3& getRotation();
 
 private:
 	void updateView(); // Update view matrix
@@ -26,5 +28,5 @@ private:
 	glm::vec3 cameraFront; // Position always in front
 	glm::vec3 cameraUp; // Position always above
 	glm::vec3 position; // camera position as a vertex in the space
-	glm::vec3 direction; // Pitch (distance from straight up where 0 is up and 180 is down), Yaw (distance from forward rotation increasing going left), Roll (rotation around z-axis)
+	glm::vec3 rotation; // Pitch (distance from straight up where 0 is up and 180 is down), Yaw (distance from forward rotation increasing going left), Roll (rotation around z-axis)
 };

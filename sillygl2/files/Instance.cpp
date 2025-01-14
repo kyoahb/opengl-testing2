@@ -1,32 +1,41 @@
 #include "Instance.h"
 
-Instance::Instance(glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name) : position(_position), scale(_scale), name(_name) {
-	rotation = glm::quat(glm::radians(_rotation));
+Instance::Instance(const std::string& _name,
+    const glm::vec3& _position,
+    const glm::quat& _rotation,
+    const glm::vec3& _scale) 
+    : GameObject(_name, _position, _rotation, _scale) {
 	formModelMatrix();
 	requestingUpdate = false;
 }
 
-void Instance::move(glm::vec3 change) {
-	position += change;
+void Instance::move(const glm::vec3& change) {
+    GameObject::move(change);
 	requestingUpdate = true;
 	positionChanged = true;
 }
 
-void Instance::rotateEuler(glm::vec3 _rotation) {
-	glm::vec3 filledRot = vec3Overfill(_rotation, 0.0f, 360.0f);
-    rotation = glm::quat(glm::radians(filledRot)) * rotation;
+void Instance::rotateEuler(const glm::vec3& _rotation) {
+    GameObject::rotateEuler(_rotation);
 	requestingUpdate = true;
 	rotationChanged = true;
 }
 
-void Instance::rotateQuat(glm::quat _rotation) {
-    rotation = _rotation * rotation;
+void Instance::rotateQuat(const glm::quat& _rotation) {
+    GameObject::rotateQuat(_rotation);
 	requestingUpdate = true;
     rotationChanged = true;
 }
 
-void Instance::addScale(glm::vec3 _scale) {
-	scale += _scale;
+void Instance::setRotation(const glm::quat& _rotation) {
+	GameObject::setRotation(_rotation);
+	requestingUpdate = true;
+	rotationChanged = true;
+}
+
+
+void Instance::addScale(const glm::vec3& _scale) {
+    GameObject::addScale(_scale);
 	requestingUpdate = true;
     scaleChanged = true;
 }

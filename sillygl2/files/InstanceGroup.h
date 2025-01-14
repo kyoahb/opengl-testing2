@@ -1,34 +1,32 @@
 #pragma once
 #include "Instance.h"
+#include "Object.h"
 
-class InstanceGroup {
+class InstanceGroup : public VertexObject {
 public:
-	std::vector<Instance*> instances; // List of instances rendered every frame
 
-	unsigned int nextInstanceID = 0;
-	std::vector<Vertex> vertices = {};
-	std::vector<unsigned int> indices = {};
-	std::vector<Texture*> textures = {};
-	Shader* shader;
-
-	glm::vec3 position = glm::vec3(0.0f); // Offset position applied to all instances
-	glm::quat rotation = glm::quat(glm::radians(glm::vec3(0.0f, 0.0f, 0.0f))); // Offset rotation applied to all instances 
-	glm::vec3 scale = glm::vec3(1.0f); // Offset scale applied to all instances
-
-
-	std::string name = ""; // Group name
-
-	InstanceGroup(Shader* _shader, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, std::string _name = "Unnamed InstanceGroup");
+	InstanceGroup(
+		const std::string& _name = "Unnamed InstanceGroup",
+		const std::vector<Vertex>& _vertices = {},
+		const std::vector<unsigned int>& _indices = {},
+		const std::vector<Texture*>& _textures = {},
+		Shader* _shader = nullptr,
+		const glm::vec3& _position = glm::vec3(0.0f),
+		const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
+		const glm::vec3& _scale = glm::vec3(1.0f));
 
 	void draw();
 
-	void rotateEuler(glm::vec3 _rotation);
-	void rotateQuat(glm::quat _rotation);
-	void move(glm::vec3 change);
-	void addScale(glm::vec3 _scale);
+	void rotateEuler(const glm::vec3& _rotation);
+	void rotateQuat(const glm::quat& _rotation);
+	void setRotation(const glm::quat& _rotation);
+	void move(const glm::vec3& change);
+	void addScale(const glm::vec3& _scale);
+
 
 	void calcAndSendModel();
 
+	const std::vector<Instance*>& getInstances();
 	std::vector<Instance*> getInstancesByName(std::string name);
 	Instance* getInstanceById(unsigned int id);
 	void updateInstances();
@@ -41,7 +39,11 @@ public:
 
 
 private:
+	std::vector<Instance*> instances; // List of instances rendered every frame
+
+	unsigned int nextInstanceID = 0;
+
 	unsigned int VAO, EBO, VBO, modelBuffer;
 	unsigned int modelBufferSize = 1000; // Initial pre-gen size of model buffer
-	unsigned int modelBufferIncrement = 1000; // Amount to increase model buffer size by when it runs out of space
+	unsigned int modelBufferIncrement = 1000; // Amount to increase model buffer size by when it runs out of space;
 };

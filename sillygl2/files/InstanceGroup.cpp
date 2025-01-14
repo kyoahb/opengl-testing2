@@ -1,8 +1,17 @@
 #include "InstanceGroup.h"
 
 
-InstanceGroup::InstanceGroup(Shader* _shader, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, std::string _name) 
-	: shader(_shader), vertices(_vertices), indices(_indices), textures(_textures), name(_name) {
+InstanceGroup::InstanceGroup(
+	const std::string& _name,
+	const std::vector<Vertex>& _vertices,
+	const std::vector<unsigned int>& _indices,
+	const std::vector<Texture*>& _textures,
+	Shader* _shader,
+	const glm::vec3& _position,
+	const glm::quat& _rotation,
+	const glm::vec3& _scale)
+	: VertexObject(_name, _vertices, _indices, _textures, _shader, _position, _rotation, _scale) {
+
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
@@ -64,41 +73,45 @@ void InstanceGroup::draw() {
 	glBindVertexArray(0);
 }
 
-void InstanceGroup::rotateEuler(glm::vec3 _rotation) {
-	glm::vec3 filledRot = vec3Overfill(_rotation, 0.0f, 360.0f);
-	rotation = glm::quat(glm::radians(filledRot)) * rotation;
+void InstanceGroup::rotateEuler(const glm::vec3& _rotation) {
+	GameObject::rotateEuler(_rotation);
 	calcAndSendModel();
 
 }
 
-void InstanceGroup::rotateQuat(glm::quat _rotation) {
-	rotation = _rotation * rotation;
+void InstanceGroup::rotateQuat(const glm::quat& _rotation) {
+	GameObject::rotateQuat(_rotation);
 	calcAndSendModel();
 }
 
-void InstanceGroup::move(glm::vec3 change) {
-	position += change;
+void InstanceGroup::setRotation(const glm::quat& _rotation) {
+	GameObject::setRotation(_rotation);
 	calcAndSendModel();
 }
 
-void InstanceGroup::addScale(glm::vec3 _scale) {
-	scale += _scale;
+void InstanceGroup::move(const glm::vec3& change) {
+	GameObject::move(change);
+	calcAndSendModel();
+}
+
+void InstanceGroup::addScale(const glm::vec3& _scale) {
+	GameObject::addScale(_scale);
 	calcAndSendModel();
 }
 
 void InstanceGroup::calcAndSendModel() {
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, position);
-	model = model * glm::toMat4(rotation);
-	model = glm::scale(model, scale);
 	shader->use();
-	shader->setMat4("group", model);
+	shader->setMat4("group", GameObject::calculateModelMatrix());
+}
+
+const std::vector<Instance*>& InstanceGroup::getInstances() {
+	return instances;
 }
 
 std::vector<Instance*> InstanceGroup::getInstancesByName(std::string name) {
 	std::vector<Instance*> foundInstances;
 	for (Instance* instance : instances) {
-		if (instance->name == name) {
+		if (instance->getName() == name) {
 			foundInstances.push_back(instance);
 		}
 	}

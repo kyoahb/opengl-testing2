@@ -14,32 +14,31 @@
 #include "Texture.h"
 #include "Shader_l.h"
 #include "Camera.h"
+#include "Object.h"
 #include <glm/gtx/quaternion.hpp>
-class Mesh {
+class Mesh : public VertexObject {
 public:
-    // mesh data
-    std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
-    std::vector<Texture*> textures;
-
 	std::vector<Mesh*> children;
     Camera* attachedCamera;
 
-
-    std::string name;
-    unsigned int id;
-    glm::vec3 position;
-    glm::vec3 scale;
-    glm::quat rotation;
-
-    Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name); // Automatically assigned name and position
-
-	void move(glm::vec3 change);
-	void rotateEuler(glm::vec3 _rotation);
-	void rotateQuat(glm::quat _rotation);
-	void addScale(glm::vec3 _scale);
+    Mesh(const std::string& _name = "Unnamed Mesh",
+        const std::vector<Vertex>& _vertices = {},
+        const std::vector<unsigned int>& _indices = {},
+        const std::vector<Texture*>& _textures = {},
+        Shader* _shader = nullptr,
+        const glm::vec3& _position = glm::vec3(0.0f),
+        const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
+        const glm::vec3& _scale = glm::vec3(1.0f));
 
 	void attachCamera(Camera* camera);
+
+    void move(const glm::vec3& change);
+    void rotateEuler(const glm::vec3& _rotation);
+    void rotateQuat(const glm::quat& _rotation);
+    void setRotation(glm::quat _rotation);
+    void addScale(const glm::vec3& _scale);
+
+    void setId(unsigned int _id);
 
     void draw(Shader& shader);
     void drawSingleTexture();

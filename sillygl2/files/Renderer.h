@@ -20,7 +20,7 @@ public:
 	Renderer(MeshManager* _meshManager);
 	void setCamera(Camera* camera); // Attach camera to renderer
 
-	void renderTest();
+	void renderTest(float deltaTime);
 	void preRenderTest();
 	Texture createTestTexture();
 

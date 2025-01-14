@@ -1,7 +1,14 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture*> _textures, glm::vec3 _position, glm::vec3 _rotation, glm::vec3 _scale, std::string _name)
-    : vertices(_vertices), indices(_indices), textures(_textures), position(_position), scale(_scale), rotation(glm::quat(glm::radians(_rotation))), model(glm::mat4(1.0f)), name(_name), id(0), children({}), attachedCamera(nullptr)
+Mesh::Mesh(const std::string& _name,
+    const std::vector<Vertex>& _vertices,
+    const std::vector<unsigned int>& _indices,
+    const std::vector<Texture*>& _textures,
+    Shader* _shader,
+    const glm::vec3& _position,
+    const glm::quat& _rotation,
+    const glm::vec3& _scale)
+    : VertexObject(_name, _vertices, _indices, _textures, _shader, _position, _rotation, _scale), children({}), attachedCamera(nullptr)
 {
 	setupMesh();
     formModelMatrix();
@@ -53,55 +60,54 @@ void Mesh::setupMesh() {
     glBindVertexArray(0);
 }
 
-void Mesh::move(glm::vec3 change) {
-	position += change;
-    modifiedThisFrame = true;
-
-	for (Mesh* child : children) {
-		child->move(change);
-	}
-	if (attachedCamera != nullptr) {
-		attachedCamera->move(change);
-	}
+void Mesh::attachCamera(Camera* camera) {
+	attachedCamera = camera;
 }
 
-void Mesh::rotateEuler(glm::vec3 _rotation) {
-    glm::vec3 filledRot = vec3Overfill(_rotation, 0.0f, 360.0f);
-	glm::quat qRot = glm::quat(glm::radians(filledRot));
-    rotation = qRot * rotation;
-    modifiedThisFrame = true;
-
-	for (Mesh* child : children) {
-		child->rotateQuat(qRot);
-	}
-    if (attachedCamera != nullptr) {
-        attachedCamera->changeDirection(_rotation);
+void Mesh::move(const glm::vec3& change) {
+    VertexObject::move(change);
+    for (Mesh* child : children) {
+        child->move(change);
+    }
+    if (attachedCamera) {
+        attachedCamera->move(change);
     }
 }
 
-void Mesh::rotateQuat(glm::quat _rotation) {
-    rotation = _rotation * rotation;
-    modifiedThisFrame = true;
+void Mesh::rotateEuler(const glm::vec3& _rotation) {
+    VertexObject::rotateEuler(_rotation);
+    for (Mesh* child : children) {
+        child->rotateEuler(_rotation);
+    }
+    if (attachedCamera) {
+        attachedCamera->rotateEuler(_rotation);
+    }
+}
 
+void Mesh::rotateQuat(const glm::quat& _rotation) {
+    VertexObject::rotateQuat(_rotation);
     for (Mesh* child : children) {
         child->rotateQuat(_rotation);
     }
-    if (attachedCamera != nullptr) {
-        attachedCamera->changeDirection(glm::degrees(glm::eulerAngles(_rotation)));
+    if (attachedCamera) {
+        attachedCamera->rotateEuler(glm::degrees(glm::eulerAngles(_rotation)));
     }
 }
 
-void Mesh::addScale(glm::vec3 _scale) {
-	scale += _scale;
-    modifiedThisFrame = true;
-
-	for (Mesh* child : children) {
-		child->addScale(_scale);
-	}
+void Mesh::setRotation(glm::quat _rotation) {
+	VertexObject::setRotation(_rotation);
 }
 
-void Mesh::attachCamera(Camera* camera) {
-	attachedCamera = camera;
+void Mesh::addScale(const glm::vec3& _scale) {
+    VertexObject::addScale(_scale);
+    for (Mesh* child : children) {
+        child->addScale(_scale);
+    }
+}
+
+
+void Mesh::setId(unsigned int _id) {
+    id = _id;
 }
 
 void Mesh::draw(Shader& shader)
@@ -181,12 +187,5 @@ void Mesh::resendVerticesIndices() {
 }
 
 void Mesh::formModelMatrix() {
-    // calculate model
-    glm::mat4 newModel = glm::mat4(1.0f);
-    newModel = glm::translate(newModel, position);
-	newModel = newModel * glm::toMat4(rotation);
-    newModel = glm::scale(newModel, scale);
-
-    // update model
-    model = newModel;
+    model = VertexObject::calculateModelMatrix();
 }

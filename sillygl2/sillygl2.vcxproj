@@ -145,7 +145,6 @@
     <ClCompile Include="files\Mesh.cpp" />
     <ClCompile Include="files\MeshManager.cpp" />
     <ClCompile Include="files\Object.cpp" />
-    <ClCompile Include="files\ObjectManager.cpp" />
     <ClCompile Include="files\Renderer.cpp" />
     <ClCompile Include="files\Script.cpp" />
     <ClCompile Include="files\ScriptManager.cpp" />
@@ -173,7 +172,6 @@
     <ClInclude Include="files\Mesh.h" />
     <ClInclude Include="files\MeshManager.h" />
     <ClInclude Include="files\Object.h" />
-    <ClInclude Include="files\ObjectManager.h" />
     <ClInclude Include="files\Renderer.h" />
     <ClInclude Include="files\Script.h" />
     <ClInclude Include="files\ScriptManager.h" />

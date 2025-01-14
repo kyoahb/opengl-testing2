@@ -9,7 +9,7 @@ void MeshManager::addInstanceGroup(InstanceGroup* instanceGroup) {
 }
 
 void MeshManager::addMesh(Mesh* mesh) {
-	mesh->id = maxID;
+	mesh->setId(maxID);
 	maxID += 1;
 	meshes.push_back(mesh);
 }
@@ -28,7 +28,7 @@ std::vector<InstanceGroup*>* MeshManager::getInstanceGroups() {
 
 Mesh* MeshManager::getMeshById(unsigned int _id) {
 	for (Mesh* mesh : meshes) {
-		if (mesh->id == _id) {
+		if (mesh->getId() == _id) {
 			return mesh;
 		}
 	}
@@ -38,7 +38,7 @@ Mesh* MeshManager::getMeshById(unsigned int _id) {
 std::vector<Mesh*> MeshManager::getMeshesByName(std::string name) {
 	std::vector<Mesh*> foundMeshes;
 	for (Mesh* mesh : meshes) {
-		if (mesh->name == name) {
+		if (mesh->getName() == name) {
 			foundMeshes.push_back(mesh);
 		}
 	}
@@ -78,7 +78,7 @@ void MeshManager::addCube(float width, float height, float depth, glm::vec3 cent
 	Texture* texture = textureManager->createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
 	textures = { texture };
 
-	Mesh* mesh = new Mesh(vertices, indices, textures, centre, glm::vec3(0.0f), glm::vec3(1.0f), "cube");
+	Mesh* mesh = new Mesh("cube", vertices, indices, textures, nullptr, centre);
 
 	addMesh(mesh);
 }

@@ -1,62 +1,82 @@
 
 #pragma once
-#include "Camera.h"
+#define GLM_FORCE_SSE2         // Enable SSE2
+#define GLM_FORCE_SSE3         // Enable SSE3
+#define GLM_FORCE_SSSE3        // Enable SSSE3
+#define GLM_FORCE_SSE4_1       // Enable SSE4.1
+#define GLM_FORCE_SSE4_2       // Enable SSE4.2
+#define GLM_FORCE_AVX          // Enable AVX
+#define GLM_FORCE_AVX2         // Enable AVX2
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES  // Align types to 16 bytes
+#define GLM_ENABLE_EXPERIMENTAL
 #include <vector>
 #include <string>
+#include "Useful.h"
+#include <glm/gtx/quaternion.hpp>
 #include "Vertex.h"
-class GameObject;
-
-enum ObjectEvent {
-    No_Event = 0,
-	Added_Object = 1,
-	Removed_Object = 2,
-    Object_Transformation = 3,
-	Object_Vertices_Changed = 4,
-};
-
-extern std::vector<GameObject*> transformedObjects;
-extern std::vector<GameObject*> vertChangedObjects;
+#include "Shader_l.h"
+#include "Texture.h"
 
 class GameObject {
-public:
-	bool isCameraAttached = false;
-	bool visible; // If object should be visibly rendered
-
-	ObjectEvent event; // Last event that happened to object
-
+protected:
     // Handles
-    std::string name;
     int id;
-
-    GameObject(glm::vec3 _position, std::string _name, bool _rendered);
-
-    void setObjectEvent(ObjectEvent e);
-
-    glm::vec3& getPosition();
-	glm::vec3& getRotation();
-	std::vector<GameObject*>& getChildren();
-	std::vector<glm::vec3>& getVertices();
-    std::vector<unsigned int>& getIndices();
-	Camera* getAttachedCamera();
-
-	void addVerticesIndices(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices, bool toRerender);
-
-    void move(glm::vec3& change);
-    void rotate(glm::vec3& _rotation);
-    void rotateWithMatrix(glm::mat4& rotationMatrix, glm::vec3 _rotation);
-    void scaleInPlace(glm::vec3& scale);
-    void scale(glm::vec3& scale);
-
-    void getAABB(glm::vec3& min, glm::vec3& max);
-
-	void attachCamera(Camera* camera);
-	void attachChild(GameObject* child);
-private:
+    std::string name;
+    // Positioning
     glm::vec3 position;
-    glm::vec3 rotation;
-    Camera* attachedCamera;
-    std::vector<Vertex> vertexData;
-    std::vector<glm::vec3> vertices;
-    std::vector<unsigned int> indices;
-    std::vector<GameObject*> children;
+    glm::quat rotation;
+    glm::vec3 scale;
+
+public:
+
+    GameObject(
+        const std::string& _name = "Unnamed Object",
+        const glm::vec3& _position = glm::vec3(0.0f), 
+        const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)), 
+        const glm::vec3& _scale = glm::vec3(1.0f));
+    virtual ~GameObject() = default;
+
+    const std::string& getName() const;
+    const glm::vec3& getPosition() const;
+    const glm::quat& getRotation() const;
+    const glm::vec3& getScale() const;
+    int getId() const;
+
+    void move(const glm::vec3& change);
+    void rotateEuler(const glm::vec3& _rotation);
+    void rotateQuat(const glm::quat& _rotation);
+	void setRotation(const glm::quat& _rotation);
+    void addScale(const glm::vec3& _scale);
+    glm::mat4 calculateModelMatrix() const;
+
+private:
+
+};
+
+
+class VertexObject : public GameObject {
+protected:
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	std::vector<Texture*> textures;
+	Shader* shader;
+
+
+public:
+    VertexObject(
+        const std::string& _name = "Unnamed VertexObject",
+        const std::vector<Vertex>& _vertices = {},
+        const std::vector<unsigned int>& _indices = {},
+        const std::vector<Texture*>& _textures = {},
+        Shader* _shader = nullptr,
+        const glm::vec3& _position = glm::vec3(0.0f),
+        const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
+        const glm::vec3& _scale = glm::vec3(1.0f));
+    virtual ~VertexObject() = default;
+
+    const std::vector<Vertex>& getVertices() const;
+    const std::vector<unsigned int>& getIndices() const;
+    const std::vector<Texture*>& getTextures() const;
+    Shader* getShader() const;
+
 };

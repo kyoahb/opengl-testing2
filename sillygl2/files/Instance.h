@@ -14,27 +14,26 @@
 #include "Texture.h"
 #include "Shader_l.h"
 #include "Camera.h"
+#include "Object.h"
 #include <glm/gtx/quaternion.hpp>
-class Instance {
+class Instance : public GameObject {
 public:
 	bool requestingUpdate = false; // Whether any transformations have been applied to the instance this frame, which should be reflected in the model matrix.
-
-	glm::vec3 position;
-	glm::quat rotation;
-	glm::vec3 scale;
-
 	unsigned int instanceID;
-	unsigned int id;
-	std::string name;
 	
 
 	glm::mat4 model = glm::mat4(1.0f); 
-	Instance(glm::vec3 _position = glm::vec3(0.0f), glm::vec3 _rotation = glm::vec3(0.0f), glm::vec3 _scale = glm::vec3(1.0f), std::string _name = "");
+	Instance(const std::string& _name = "Unnamed Instance",
+		const glm::vec3& _position = glm::vec3(0.0f),
+		const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
+		const glm::vec3& _scale = glm::vec3(1.0f));
 
-	void move(glm::vec3 change);
-	void rotateEuler(glm::vec3 _rotation);
-	void rotateQuat(glm::quat _rotation);
-	void addScale(glm::vec3 _scale);
+	// Overrriden GameObject transforms, with added flags.
+	void rotateEuler(const glm::vec3& _rotation);
+	void rotateQuat(const glm::quat& _rotation);
+	void setRotation(const glm::quat& _rotation);
+	void move(const glm::vec3& change);
+	void addScale(const glm::vec3& _scale);
 
 	glm::mat4 getModelMatrix();
 	void formModelMatrix();

@@ -18,7 +18,6 @@
 #include "Camera.h"
 #include "Input.h"
 #include "Renderer.h"
-#include "ObjectManager.h"
 #include "MeshManager.h"
 #include "ScriptManager.h"
 #include "Manager.h"
@@ -28,9 +27,6 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void window_focus_callback(GLFWwindow* window, int focused);
-// settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
 
 int main() {
     // glfw: initialize and configure
@@ -42,7 +38,7 @@ int main() {
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(Manager::getInstance().SCR_WIDTH, Manager::getInstance().SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -61,7 +57,6 @@ int main() {
         return -1;
     }
     // load globals
-    ObjectManager objectManager;
     TextureManager textureManager;
     MeshManager meshManager(&textureManager);
     InputManager inputManager(window);
@@ -69,7 +64,7 @@ int main() {
     MenuManager menuManager(window);
     Renderer renderer(&meshManager);
 
-    Manager::getInstance().initialize(&inputManager, &objectManager, &meshManager, &textureManager, &renderer, &menuManager, window);
+    Manager::getInstance().initialize(&inputManager, &meshManager, &textureManager, &renderer, &menuManager, window);
 
     scriptManager.registerScript(new ControlScript());
     scriptManager.registerScript(new EngineScript());
@@ -102,7 +97,7 @@ int main() {
 
         // render
         // ------
-        renderer.renderTest();
+        renderer.renderTest((float)deltaTime);
         
 
         menuManager.frameEnd();
@@ -124,6 +119,8 @@ int main() {
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	Manager::getInstance().SCR_WIDTH = width;
+	Manager::getInstance().SCR_HEIGHT = height;
 }
 
 

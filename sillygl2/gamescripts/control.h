@@ -10,7 +10,6 @@ public:
 	bool inputDisabled = false;
     void onStart() override {
 		Renderer* renderer = Manager::getInstance().getRenderer();
-		ObjectManager* objectManager = Manager::getInstance().getObjectManager();
 		MeshManager* meshManager = Manager::getInstance().getMeshManager();
 		InputManager* inputManager = Manager::getInstance().getInputManager();
 		MenuManager* menuManager = Manager::getInstance().getMenuManager();
@@ -20,7 +19,7 @@ public:
 		camera = new Camera();
 		renderer->setCamera(camera);
 
-		player = new Mesh({}, {}, {}, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f), "player");
+		player = new Mesh("player");
 		player->attachCamera(camera);
 		meshManager->addMesh(player);
 
@@ -100,7 +99,7 @@ public:
 			double xoffset = (m->xPos - m->lastXPos) * sensitivity;
 			double yoffset = (m->yPos - m->lastYPos) * sensitivity;
 
-			camera->changeDirection(glm::vec3(static_cast<float>(yoffset), static_cast<float>(xoffset), 0.0f));
+			camera->rotateEuler(glm::vec3(static_cast<float>(yoffset), static_cast<float>(xoffset), 0.0f));
 			};
 		inputManager->setMouse(m);
 
@@ -109,7 +108,7 @@ public:
 
 	void movement(std::string way) { // Inefficient but I DONT CARE! for now
 		glm::vec3 change = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec3 direction = camera->getDirection();
+		glm::vec3 direction = camera->getRotation();
         if (way == "forward") {
 			change.z += (float)cos(glm::radians(direction.y));
 			change.x += (float)sin(glm::radians(direction.y));

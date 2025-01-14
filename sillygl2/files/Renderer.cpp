@@ -75,15 +75,15 @@ void Renderer::preRenderTest() {
 	textures = { texture };
 
     // Make a new instance group
-	InstanceGroup* group = new InstanceGroup(shader, vertices, indices, textures, "cubes");
+	InstanceGroup* group = new InstanceGroup("cubes", vertices, indices, textures, shader);
 	meshManager->addInstanceGroup(group);
 	for (int i = 0; i < 2250; i++) {
-		group->addInstance(new Instance(rand_vec3(-10.0f, 10.0f), glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f), "test"));
+		group->addInstance(new Instance("test", rand_vec3(-10.0f, 10.0f), glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
 	}
 
 }
 
-void Renderer::renderTest() {
+void Renderer::renderTest(float deltaTime) {
 	static glm::quat rotation = glm::quat(glm::radians(glm::vec3(0.01f, 0.0f, 0.0f)));
 	glClearColor(0.5f, 0.0f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -104,7 +104,7 @@ void Renderer::renderTest() {
 	//for (Instance* cube : groups[0]->instances) {
 	//	cube->rotateQuat(rotation);
 	//}
-	groups[0]->rotateQuat(rotation);
+	//groups[0]->rotateEuler(deltaTime * glm::vec3(360.0f, 0.0f, 0.0f));
 	//groups[0]->rotateEuler(glm::vec3(0.1f, 0.0f, 0.0f));
 }
 
