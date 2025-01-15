@@ -173,8 +173,7 @@ public:
 	template <typename T>
 	void RotationDragV3(T* object) {
 		ImGui::PushItemWidth(100); // Input fields have a max width 
-		glm::quat quatRotation = object->getRotation();
-		glm::vec3 tempRotation = glm::degrees(glm::eulerAngles(quatRotation)); // Copy of rotation
+		glm::vec3 tempRotation = object->getEulerRotation(); // Copy of rotation
 		if (ImGui::DragFloat("Pitch##xx", &tempRotation.x, 0.1f, -180.0f, 180.0f, "%.1f") || ImGui::DragFloat("Yaw##xx", &tempRotation.y, 0.1f, -180.0f, 180.0f, "%.1f") || ImGui::DragFloat("Roll##xx", &tempRotation.z, 0.1f, -180.0f, 180.0f, "%.1f")) {
 			object->setRotation(glm::quat(glm::radians(tempRotation)));
 
@@ -276,11 +275,9 @@ public:
 				if (mesh->attachedCamera != nullptr) {
 					if (ImGui::CollapsingHeader("Attached Camera")) {
 						Camera* camera = mesh->attachedCamera;
-						const glm::vec3& cameraPosition = camera->getPosition();
-						const glm::vec3& cameraRotation = camera->getRotation();
 
-						ImGui::Text("Position: (%f, %f, %f)", cameraPosition.x, cameraPosition.y, cameraPosition.z);
-						ImGui::Text("Rotation: (%f, %f, %f)", cameraRotation.x, cameraRotation.y, cameraRotation.z);
+						PositionInputV3(camera);
+						RotationDragV3(camera);
 					}
 				}
 				ImGui::TreePop();
@@ -290,6 +287,7 @@ public:
 
 	void instanceGroupTree(InstanceGroup* instanceGroup, bool verticesAreRelative) {
 		std::vector<Instance*> instances = instanceGroup->getInstances();
+		// Instance Group characteristics
 		if (ImGui::CollapsingHeader("Position")) {
 
 			PositionInputV3(instanceGroup);
@@ -303,7 +301,6 @@ public:
 		if (instanceGroup->getVertices().size() > 0) {
 			std::vector<Vertex> vertices = instanceGroup->getVertices();
 			if (ImGui::CollapsingHeader("Vertices")) {
-				glm::vec3 objectPosition = instanceGroup->getPosition();
 				// Display vertices
 				for (int i = 0; i < vertices.size(); i++) {
 					Vertex& vertex = vertices[i]; // Reference to existing vertex position, will be updated in code

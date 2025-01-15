@@ -1,11 +1,19 @@
 #pragma once
-
+#define GLM_FORCE_SSE2         // Enable SSE2
+#define GLM_FORCE_SSE3         // Enable SSE3
+#define GLM_FORCE_SSSE3        // Enable SSSE3
+#define GLM_FORCE_SSE4_1       // Enable SSE4.1
+#define GLM_FORCE_SSE4_2       // Enable SSE4.2
+#define GLM_FORCE_AVX          // Enable AVX
+#define GLM_FORCE_AVX2         // Enable AVX2
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES  // Align types to 16 bytes
+#define GLM_ENABLE_EXPERIMENTAL
 #define _USE_MATH_DEFINES
 #include <glad/glad.h>
 #include <math.h>
 #include <string>
 #include "Useful.h"
-
+#include <glm/gtx/quaternion.hpp>
 class Camera
 {
 public:
@@ -15,18 +23,24 @@ public:
 	
 	Camera(); 
 
-	void rotateEuler(glm::vec3 _rotation); // Change direction of camera and resulting cameraFront position and view matrix
-	void move(glm::vec3 change); // Move camera position
+	void move(const glm::vec3& change);
+	void rotateEuler(const glm::vec3& _rotation);
+	void rotateQuat(const glm::quat& _rotation);
 
 	const glm::vec3& getPosition();
-	void setPosition(glm::vec3& _position);
-	const glm::vec3& getRotation();
+	void setPosition(const glm::vec3& _position);
+	
+	const glm::vec3& getEulerRotation();
+	const glm::quat& getQuatRotation();
+	void setRotation(const glm::vec3& _rotation);
+	void setRotation(const glm::quat& _rotation);
 
 private:
 	void updateView(); // Update view matrix
-
-	glm::vec3 cameraFront; // Position always in front
-	glm::vec3 cameraUp; // Position always above
-	glm::vec3 position; // camera position as a vertex in the space
-	glm::vec3 rotation; // Pitch (distance from straight up where 0 is up and 180 is down), Yaw (distance from forward rotation increasing going left), Roll (rotation around z-axis)
+	void calculateFront(); // Calculate front vector
+	glm::vec3 cameraFront = glm::vec3(1.0f, 0.0f, 0.0f); // Position always in front
+	glm::vec3 initialCameraFront = cameraFront; // Initial front position
+	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f); // Position always above
+	glm::vec3 position = glm::vec3(0.0f); // camera position as a vertex in the space
+	glm::vec3 rotation = glm::vec3(0.0f); // Pitch (distance from straight up where 0 is up and 180 is down), Yaw (distance from forward rotation increasing going left), Roll (rotation around z-axis)
 };

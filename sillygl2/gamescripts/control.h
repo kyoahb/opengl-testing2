@@ -108,24 +108,23 @@ public:
 
 	void movement(std::string way) { // Inefficient but I DONT CARE! for now
 		glm::vec3 change = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec3 direction = camera->getRotation();
-        if (way == "forward") {
-			change.z += (float)cos(glm::radians(direction.y));
-			change.x += (float)sin(glm::radians(direction.y));
-			change.y += (float)cos(glm::radians(direction.x));
-        }
-        else if (way == "back") {
-			change.z -= (float)cos(glm::radians(direction.y));
-			change.x -= (float)sin(glm::radians(direction.y));
-			change.y -= (float)cos(glm::radians(direction.x));
-        }
-		else if (way == "left") {
-			change.x += (float)cos(glm::radians(-direction.y));
-			change.z += (float)sin(glm::radians(-direction.y));
+		glm::vec3 direction = camera->getEulerRotation();
+		if (way == "forward") { 
+			change.x += cos(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
+			change.y += sin(glm::radians(direction.x)); change.z += sin(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
+		}
+		else if (way == "back") {
+			change.x -= cos(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
+			change.y -= sin(glm::radians(direction.x)); 
+			change.z -= sin(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
+		}
+		else if (way == "left") { 
+			change.x -= cos(glm::radians(direction.y + 90.0f)); 
+			change.z -= sin(glm::radians(direction.y + 90.0f)); 
 		}
 		else if (way == "right") {
-			change.x -= (float)cos(glm::radians(-direction.y));
-			change.z -= (float)sin(glm::radians(-direction.y));
+			change.x += cos(glm::radians(direction.y + 90.0f));
+			change.z += sin(glm::radians(direction.y + 90.0f));
 		}
 		else if (way == "up") {
 			change.y += 1.0f;

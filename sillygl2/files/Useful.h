@@ -8,10 +8,10 @@
 #include <iostream>
 
 // Returns rotation matrix for a vec3 rotation
-glm::mat4& mat4Rotate(glm::vec3 rotation);
+const glm::mat4& mat4Rotate(const glm::vec3& rotation);
 
 //Rotates a vector by a given rotation about the origin
-glm::vec3& vec3Rotate(glm::vec3 rotation, glm::vec3 original);
+const glm::vec3& vec3Rotate(const glm::vec3& rotation, const glm::vec3& original);
 
 //Rotates a vector by a given rotation about a given point
 glm::vec3& vec3RotateAroundPoint(glm::vec3 rotation, glm::vec3 point, glm::vec3 original);

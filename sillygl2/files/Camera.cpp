@@ -1,33 +1,62 @@
 #include "Camera.h"
 
 Camera::Camera() {
-	position = glm::vec3(0.0f, 0.0f, 0.0f);
-	cameraFront = glm::vec3(0.0f, 1.0f, 0.0f);
-	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-	rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-
 	view = glm::lookAt(position, position + cameraFront, cameraUp);
 }
 
-// Change direction of camera and resulting cameraFront position and view matrix
-void Camera::rotateEuler(glm::vec3 _rotation) {
-	// Yaw is flipped, think OpenGL just does that
-	rotation += glm::vec3(_rotation.x, -1 * _rotation.y, _rotation.z);
+void Camera::calculateFront() {
+	glm::vec3 front;
+	front.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+	front.y = sin(glm::radians(rotation.x));
+	front.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+	cameraFront = glm::normalize(front);
+}
 
-	// Overfill direction between 0-360
-	rotation = vec3Overfill(rotation, 0.0f, 360.0f);
+void Camera::rotateEuler(const glm::vec3& _rotation) {
+	glm::vec3 flippedR = glm::vec3(-1 * _rotation.x, _rotation.y, _rotation.z);
+	rotation += flippedR;
+	rotation = vec3Overfill(rotation, -180.0f, 180.0f);
 
-	// Clamp the pitch around 0 (straight up) and 180 (straight down) to avoid flipping
-	rotation.x = glm::clamp(rotation.x, 5.0f, 175.0f);
+	rotation.x = glm::clamp(rotation.x, -89.0f, 89.0f);
 
-	cameraFront = vec3Rotate(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+	calculateFront();
 	updateView();
 }
 
+void Camera::rotateQuat(const glm::quat& _rotation) {
+	rotation = glm::degrees(glm::eulerAngles(_rotation)) + rotation;
+	rotation = vec3Overfill(rotation, -180.0f, 180.0f);
+
+	rotation.x = glm::clamp(rotation.x, -89.0f, 89.0f);
+
+	calculateFront();
+	updateView();
+
+}
+
+
 // Use if camera is not attached to a GameObject, though it really should be
-void Camera::move(glm::vec3 change) {
+void Camera::move(const glm::vec3& change) {
 	position += change;
 
+	updateView();
+}
+
+void Camera::setRotation(const glm::vec3& _rotation) {
+	rotation = _rotation;
+	rotation = vec3Overfill(rotation, -180.0f, 180.0f);
+	rotation.x = glm::clamp(rotation.x, -89.0f, 89.0f);
+
+	calculateFront();
+	updateView();
+}
+
+void Camera::setRotation(const glm::quat& _rotation) {
+	rotation = glm::degrees(glm::eulerAngles(_rotation));
+	rotation = vec3Overfill(rotation, -180.0f, 180.0f);
+	rotation.x = glm::clamp(rotation.x, -89.0f, 89.0f);
+
+	calculateFront();
 	updateView();
 }
 
@@ -40,11 +69,15 @@ const glm::vec3& Camera::getPosition() {
 	return position;
 }
 
-void Camera::setPosition(glm::vec3& _position) {
+void Camera::setPosition(const glm::vec3& _position) {
 	position = _position;
 	updateView();
 }
 
-const glm::vec3& Camera::getRotation() {
+const glm::vec3& Camera::getEulerRotation() {
 	return rotation;
+}
+
+const glm::quat& Camera::getQuatRotation() {
+	return glm::quat(glm::radians(rotation));
 }

@@ -38,7 +38,8 @@ public:
 
     const std::string& getName() const;
     const glm::vec3& getPosition() const;
-    const glm::quat& getRotation() const;
+    const glm::quat& getQuatRotation() const;
+    const glm::vec3& getEulerRotation() const;
     const glm::vec3& getScale() const;
     int getId() const;
 

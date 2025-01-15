@@ -17,8 +17,12 @@ const glm::vec3& GameObject::getPosition() const {
 	return position;
 }
 
-const glm::quat& GameObject::getRotation() const {
+const glm::quat& GameObject::getQuatRotation() const {
 	return rotation;
+}
+
+const glm::vec3& GameObject::getEulerRotation() const {
+	return glm::degrees(glm::eulerAngles(rotation));
 }
 
 const glm::vec3& GameObject::getScale() const {

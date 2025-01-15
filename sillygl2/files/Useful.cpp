@@ -1,22 +1,21 @@
 #include "Useful.h"
 
 // Returns rotation matrix for a vec3 rotation
-glm::mat4& mat4Rotate(glm::vec3 rotation) {
+const glm::mat4& mat4Rotate(const glm::vec3& rotation) {
     glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 rotationMatrix = rotationZ * rotationY * rotationX;
+	glm::mat4 rotationMatrix = rotationX * rotationY * rotationZ;
     return rotationMatrix;
 }
 
 //Rotates a vector by a given rotation about the origin
-glm::vec3& vec3Rotate(glm::vec3 rotation, glm::vec3 original) {
+const glm::vec3& vec3Rotate(const glm::vec3& rotation, const glm::vec3& original) {
     // Combine rotations
     glm::mat4 rotationMatrix = mat4Rotate(rotation);
-
-    original = rotationMatrix * glm::vec4(original, 0.0f);
-    original = glm::vec3(original);
-    return original;
+    glm::vec3 newRotation = rotationMatrix * glm::vec4(newRotation, 0.0f);
+    newRotation = glm::vec3(newRotation);
+    return newRotation;
 }
 
 //Rotates a vector by a given rotation about a given point

@@ -107,9 +107,3 @@ void Renderer::renderTest(float deltaTime) {
 	//groups[0]->rotateEuler(deltaTime * glm::vec3(360.0f, 0.0f, 0.0f));
 	//groups[0]->rotateEuler(glm::vec3(0.1f, 0.0f, 0.0f));
 }
-
-Texture Renderer::createTestTexture() {
-
-	char path[] = "textures/Trollface.png";
-	return Texture(TextureType::Diffuse, path);
-}

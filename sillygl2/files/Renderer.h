@@ -22,7 +22,6 @@ public:
 
 	void renderTest(float deltaTime);
 	void preRenderTest();
-	Texture createTestTexture();
 
 private:
     float const vecSize = sizeof(float) * 3;
