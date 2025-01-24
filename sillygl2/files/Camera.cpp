@@ -13,7 +13,7 @@ void Camera::calculateFront() {
 }
 
 void Camera::rotateEuler(const glm::vec3& _rotation) {
-	glm::vec3 flippedR = glm::vec3(-1 * _rotation.x, _rotation.y, _rotation.z);
+	glm::vec3 flippedR = glm::vec3(_rotation.x, _rotation.y, _rotation.z);
 	rotation += flippedR;
 	rotation = vec3Overfill(rotation, -180.0f, 180.0f);
 
@@ -61,7 +61,13 @@ void Camera::setRotation(const glm::quat& _rotation) {
 }
 
 void Camera::updateView() {
-	view = glm::lookAt(position, position + cameraFront, cameraUp);
+	//view = glm::lookAt(position, position + cameraFront, cameraUp);
+	glm::mat4 rotationMatrix = glm::mat4(1.0f);
+	rotationMatrix = glm::rotate(rotationMatrix, glm::radians(rotation.x), glm::vec3(-1.0f, 0.0f, 0.0f)); // Pitch
+	rotationMatrix = glm::rotate(rotationMatrix, glm::radians(rotation.y), glm::vec3(0.0f, -1.0f, 0.0f)); // Yaw
+	rotationMatrix = glm::rotate(rotationMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, -1.0f)); // Roll
+	glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), -position);
+	view = rotationMatrix * translationMatrix;
 	updatedView = true;
 }
 

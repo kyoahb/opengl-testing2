@@ -1,5 +1,15 @@
 #include "Useful.h"
 
+void mat4Print(const glm::mat4& matrix) {
+	for (int i = 0; i < 4; i++) {
+		std::cout << matrix[i][0] << " " << matrix[i][1] << " " << matrix[i][2] << " " << matrix[i][3] << std::endl;
+	}
+}
+
+void vec3Print(const glm::vec3& vector) {
+	std::cout << "X: " << vector.x << " Y: " << vector.y << " Z: " << vector.z << std::endl;
+}
+
 // Returns rotation matrix for a vec3 rotation
 const glm::mat4& mat4Rotate(const glm::vec3& rotation) {
     glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

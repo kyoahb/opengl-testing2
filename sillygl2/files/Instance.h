@@ -19,7 +19,8 @@
 class Instance : public GameObject {
 public:
 	bool requestingUpdate = false; // Whether any transformations have been applied to the instance this frame, which should be reflected in the model matrix.
-	unsigned int instanceID;
+	unsigned int instanceID; // Unique (InstanceGroup scope) ID for this instance
+	unsigned int modelBufferIndex = 0; // Index in the model buffer where this instance's model matrix is stored
 	
 
 	glm::mat4 model = glm::mat4(1.0f); 

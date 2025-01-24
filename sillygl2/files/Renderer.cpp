@@ -1,9 +1,9 @@
 #include "Renderer.h"
 #include "Manager.h"
-Renderer::Renderer(MeshManager* _meshManager) :
+Renderer::Renderer(ObjectManager* _objectManager) :
     projection(glm::mat4(1.0f)),
     model(glm::mat4(1.0f)),
-    meshManager(_meshManager)
+    objectManager(_objectManager)
 {
 	Manager* manager = &Manager::getInstance();
     // Setup globally applied matrices
@@ -24,7 +24,7 @@ Renderer::Renderer(MeshManager* _meshManager) :
 
     glEnable(GL_DEPTH_TEST);
 
-    preRenderTest();
+	preRenderTest();
 }
 
 void Renderer::setCamera(Camera* camera) {
@@ -35,50 +35,9 @@ void Renderer::setCamera(Camera* camera) {
 
 void Renderer::preRenderTest() {
 
-	Shader* shader = new Shader("shaders/instance_shader.vert", "shaders/shader.frag");
-
-	float width = 1.0f;
-	float height = 1.0f;
-	float depth = 1.0f;
-	glm::vec3 centre = { 0.0f, 0.0f, 0.0f };
-
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
-	std::vector<Texture*> textures;
-
-	vertices = {
-		Vertex(glm::vec3(-width / 2, -height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
-		Vertex(glm::vec3(width / 2, -height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
-		Vertex(glm::vec3(width / 2, height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
-		Vertex(glm::vec3(-width / 2, height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
-		Vertex(glm::vec3(-width / 2, -height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)),
-		Vertex(glm::vec3(width / 2, -height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 0.0f)),
-		Vertex(glm::vec3(width / 2, height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)),
-		Vertex(glm::vec3(-width / 2, height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)),
-	};
-
-	indices = {
-		0, 1, 2,
-		2, 3, 0,
-		1, 5, 6,
-		6, 2, 1,
-		7, 6, 5,
-		5, 4, 7,
-		4, 0, 3,
-		3, 7, 4,
-		4, 5, 1,
-		1, 0, 4,
-		3, 2, 6,
-		6, 7, 3
-	};
-	Texture* texture = meshManager->textureManager->createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
-	textures = { texture };
-
-    // Make a new instance group
-	InstanceGroup* group = new InstanceGroup("cubes", vertices, indices, textures, shader);
-	meshManager->addInstanceGroup(group);
-	for (int i = 0; i < 2250; i++) {
-		group->addInstance(new Instance("test", rand_vec3(-10.0f, 10.0f), glm::vec3(0.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
+	InstanceGroup* cubes = objectManager->createCubeInstanceGroup(1.0f, 1.0f, 1.0f, glm::vec3(0.0f), "cubes");
+	for (int i = 0; i < 10; i++) {
+		objectManager->addCube(cubes, rand_vec3(-5.0f, 5.0f), glm::vec3(0.0f), rand_vec3(0.1f, 5.0f), "cube");
 	}
 
 }
@@ -96,7 +55,7 @@ void Renderer::renderTest(float deltaTime) {
 	//for (auto& mesh : *(meshManager->getMeshes())) {
 	//	mesh->drawSingleTexture();
 	//}
-	std::vector<InstanceGroup*> groups = *(meshManager->getInstanceGroups());
+	std::vector<InstanceGroup*> groups = *(objectManager->getInstanceGroups());
 	for (InstanceGroup* group : groups) {
 		group->draw();
 	}

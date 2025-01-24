@@ -1,6 +1,6 @@
 #pragma once
 #include "Input.h"
-#include "MeshManager.h"
+#include "ObjectManager.h"
 #include "TextureManager.h"
 #include "MenuManager.h"
 #include "Renderer.h"
@@ -16,13 +16,13 @@ public:
 	const float FOV = 60.0f;
 
     InputManager* getInputManager();
-	MeshManager* getMeshManager();
+	ObjectManager* getObjectManager();
     TextureManager* getTextureManager();
     Renderer* getRenderer();
     MenuManager* getMenuManager();
     GLFWwindow* getWindow();
 
-    void initialize(InputManager* inputMgr, MeshManager* meshMgr, TextureManager* textureMgr, Renderer* rend, MenuManager* menuMgr, GLFWwindow* wind);
+    void initialize(InputManager* inputMgr, ObjectManager* objectMgr, TextureManager* textureMgr, Renderer* rend, MenuManager* menuMgr, GLFWwindow* wind);
 
 private:
     Manager();
@@ -32,7 +32,7 @@ private:
     Manager& operator=(const Manager&) = delete;
 
     InputManager* inputManager = nullptr;
-    MeshManager* meshManager = nullptr;
+    ObjectManager* objectManager = nullptr;
 	TextureManager* textureManager = nullptr;
     Renderer* renderer = nullptr;
     MenuManager* menuManager = nullptr;

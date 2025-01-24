@@ -1,15 +1,4 @@
 #pragma once
-#define GLM_FORCE_SSE2         // Enable SSE2
-#define GLM_FORCE_SSE3         // Enable SSE3
-#define GLM_FORCE_SSSE3        // Enable SSSE3
-#define GLM_FORCE_SSE4_1       // Enable SSE4.1
-#define GLM_FORCE_SSE4_2       // Enable SSE4.2
-#define GLM_FORCE_AVX          // Enable AVX
-#define GLM_FORCE_AVX2         // Enable AVX2
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES  // Align types to 16 bytes
-#define GLM_ENABLE_EXPERIMENTAL
-#define _USE_MATH_DEFINES
-#include <glad/glad.h>
 #include <math.h>
 #include <string>
 #include "Useful.h"

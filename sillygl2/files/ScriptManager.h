@@ -18,6 +18,7 @@ public:
 
     void startScripts() {
         for (auto& script : scripts) {
+			spdlog::info("Starting script: {}", script->name);
             script->initialize();
         }
     }

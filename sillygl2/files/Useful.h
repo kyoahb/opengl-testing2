@@ -1,11 +1,69 @@
 #pragma once
-#define GLM_FORCE_SSE42 // or GLM_FORCE_SSE42 if your processor supports it
-#define GLM_FORCE_ALIGNED
-
+#define GLM_FORCE_SSE2         // Enable SSE2
+#define GLM_FORCE_SSE3         // Enable SSE3
+#define GLM_FORCE_SSSE3        // Enable SSSE3
+#define GLM_FORCE_SSE4_1       // Enable SSE4.1
+#define GLM_FORCE_SSE4_2       // Enable SSE4.2
+#define GLM_FORCE_AVX          // Enable AVX
+#define GLM_FORCE_AVX2         // Enable AVX2
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES  // Align types to 16 bytes
+#define GLM_ENABLE_EXPERIMENTAL
+#define _USE_MATH_DEFINES
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <iostream>
+#include "Log.h"
+
+// Only use assert log if in debug mode
+#ifndef NDEBUG
+#define ASSERT_LOG(condition, message) \
+    do { \
+        if (!(condition)) { \
+            spdlog::error(message); \
+            std::exit(EXIT_FAILURE); \
+        } \
+    } while (false)
+#else
+#define ASSERT_LOG(condition, message) ((void)0)
+#endif
+
+template <typename T>
+void batchBuffer(unsigned int VAO, GLenum bufferType, unsigned int buffer, const std::vector<T>& dataList, GLenum usage) {
+    ASSERT_LOG(bufferType == GL_ARRAY_BUFFER || bufferType == GL_ELEMENT_ARRAY_BUFFER, "Attempted to batch invalid buffer type");
+    ASSERT_LOG(usage == GL_STATIC_DRAW || usage == GL_DYNAMIC_DRAW || usage == GL_STREAM_DRAW, "Attempted to batch buffer with invalid usage");
+
+    glBindVertexArray(VAO);
+    ASSERT_LOG(glIsVertexArray(VAO), "Invalid VAO");
+
+    glBindBuffer(bufferType, buffer);
+    ASSERT_LOG(glIsBuffer(buffer), "Invalid Buffer");
+
+    glBufferData(bufferType, dataList.size() * sizeof(T), dataList.data(), usage);
+
+    glBindVertexArray(0);
+}
+
+template <typename T>
+void singleBuffer(unsigned int VAO, GLenum bufferType, unsigned int buffer, std::size_t start, const T& data, GLenum usage) {
+	ASSERT_LOG(bufferType == GL_ARRAY_BUFFER || bufferType == GL_ELEMENT_ARRAY_BUFFER, "Attempted to batch invalid buffer type");
+	ASSERT_LOG(usage == GL_STATIC_DRAW || usage == GL_DYNAMIC_DRAW || usage == GL_STREAM_DRAW, "Attempted to batch buffer with invalid usage");
+
+    glBindVertexArray(VAO);
+    ASSERT_LOG(glIsVertexArray(VAO), "Invalid VAO");
+
+    glBindBuffer(bufferType, buffer);
+    ASSERT_LOG(glIsBuffer(buffer), "Invalid Buffer");
+	glBufferSubData(bufferType, start, sizeof(T), &data);
+	glBindBuffer(bufferType, 0);
+
+	glBindVertexArray(0);
+}
+void mat4Print(const glm::mat4& matrix);
+
+void vec3Print(const glm::vec3& vector);
 
 // Returns rotation matrix for a vec3 rotation
 const glm::mat4& mat4Rotate(const glm::vec3& rotation);

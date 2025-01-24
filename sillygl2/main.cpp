@@ -18,7 +18,7 @@
 #include "Camera.h"
 #include "Input.h"
 #include "Renderer.h"
-#include "MeshManager.h"
+#include "ObjectManager.h"
 #include "ScriptManager.h"
 #include "Manager.h"
 // Game Scripts
@@ -29,6 +29,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void window_focus_callback(GLFWwindow* window, int focused);
 
 int main() {
+    Log::initialize();
+
+	spdlog::info("Starting main()");
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -41,7 +45,7 @@ int main() {
     GLFWwindow* window = glfwCreateWindow(Manager::getInstance().SCR_WIDTH, Manager::getInstance().SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
+		spdlog::error("Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
@@ -53,24 +57,29 @@ int main() {
 // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        spdlog::error("Failed to initialize GLAD");
         return -1;
     }
+
     // load globals
     TextureManager textureManager;
-    MeshManager meshManager(&textureManager);
+    ObjectManager objectManager(&textureManager);
     InputManager inputManager(window);
     ScriptManager scriptManager;
     MenuManager menuManager(window);
-    Renderer renderer(&meshManager);
+    Renderer renderer(&objectManager);
+    spdlog::info("Loading globals successful.");
 
-    Manager::getInstance().initialize(&inputManager, &meshManager, &textureManager, &renderer, &menuManager, window);
+    Manager::getInstance().initialize(&inputManager, &objectManager, &textureManager, &renderer, &menuManager, window);
 
+
+	// load scripts
     scriptManager.registerScript(new ControlScript());
     scriptManager.registerScript(new EngineScript());
 
     // Start scripts
     scriptManager.startScripts();
+    spdlog::info("Scripts started.");
 
     double deltaTime = 0.0f;
     double lastFrame = 0.0f;
@@ -78,6 +87,7 @@ int main() {
     int frames = 0;
     // render loop
     // -----------
+    spdlog::info("Render loop begun.");
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -109,6 +119,7 @@ int main() {
     }
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
+    spdlog::info("Terminating window.");
     glfwTerminate();
     menuManager.shutdown();
     return 0;
@@ -129,11 +140,11 @@ void window_focus_callback(GLFWwindow* window, int focused)
     if (focused)
     {
         // Window gained focus
-        std::cout << "Window gained focus" << std::endl;
+        spdlog::info("Window gained focus");
     }
     else
     {
         // Window lost focus
-        std::cout << "Window lost focus" << std::endl;
+        spdlog::info("Window lost focus");
     }
 } 

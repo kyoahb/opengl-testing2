@@ -5,12 +5,14 @@
 
 class ControlScript : public Script {
 public:
+	ControlScript() : Script("ControlScript") {}
+
 	double lastXPos = 0.0f;
 	double lastYPos = 0.0f;
 	bool inputDisabled = false;
     void onStart() override {
 		Renderer* renderer = Manager::getInstance().getRenderer();
-		MeshManager* meshManager = Manager::getInstance().getMeshManager();
+		ObjectManager* objectManager = Manager::getInstance().getObjectManager();
 		InputManager* inputManager = Manager::getInstance().getInputManager();
 		MenuManager* menuManager = Manager::getInstance().getMenuManager();
 		GLFWwindow* window = Manager::getInstance().getWindow();
@@ -19,9 +21,8 @@ public:
 		camera = new Camera();
 		renderer->setCamera(camera);
 
-		player = new Mesh("player");
+		player = objectManager->addMesh(new Mesh("player"));
 		player->attachCamera(camera);
-		meshManager->addMesh(player);
 
 		Key* forward = new Key(GLFW_KEY_W);
 		forward->holdFunction = [this]() { this->movement("forward"); };
@@ -47,40 +48,40 @@ public:
 		up->holdFunction = [this]() { this->movement("up"); };
 		inputManager->addKey(up);
 
-
+		/*
 		Key* addCube = new Key(GLFW_KEY_E);
-		addCube->pressFunction = [this, meshManager]() {
-			meshManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
+		addCube->pressFunction = [this, objectManager]() {
+			objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
 			};
 		inputManager->addKey(addCube);
 
 		Key* add2250Cubes = new Key(GLFW_KEY_P);
-		add2250Cubes->pressFunction = [this, meshManager]() {
-			for (int i = 0; i < 2250; i++) meshManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
+		add2250Cubes->pressFunction = [this, objectManager]() {
+			for (int i = 0; i < 2250; i++) objectManager->addCube(0.5f, 0.5f, 0.5f, glm::vec3(rand_float(-5, 5), rand_float(-5, 5), rand_float(-5, 5)), "cube");
 			};
 		inputManager->addKey(add2250Cubes);
 
 		Key* removeCube = new Key(GLFW_KEY_F);
-		removeCube->pressFunction = [this, meshManager]() {
-			meshManager->removeMesh(meshManager->getMeshesByName("cube")[0]);
+		removeCube->pressFunction = [this, objectManager]() {
+			objectManager->removeMesh(meshManager->getMeshesByName("cube")[0]);
 			};
 		inputManager->addKey(removeCube);
 
 		Key* rotateCubes = new Key(GLFW_KEY_Q);
-		rotateCubes->holdFunction = [this, meshManager]() {
+		rotateCubes->holdFunction = [this, objectManager]() {
 			glm::vec3 rotation = (float)dTime * glm::vec3(360.0f, 0.0f, 0.0f);
-			std::vector<Mesh*> cubes = meshManager->getMeshesByName("cube");
+			std::vector<Mesh*> cubes = objectManager->getMeshesByName("cube");
 			for (Mesh* cube : cubes) cube->rotateEuler(rotation);
 			};
 		inputManager->addKey(rotateCubes);
 
 		Key* rotateSingularCube = new Key(GLFW_KEY_R);
-		rotateSingularCube->holdFunction = [this, meshManager]() {
+		rotateSingularCube->holdFunction = [this, objectManager]() {
 			glm::vec3 rotation = glm::vec3(0.0f, 1.0f, 0.0f);
-			meshManager->getMeshesByName("cube")[0]->rotateEuler(rotation);
+			objectManager->getMeshesByName("cube")[0]->rotateEuler(rotation);
 			};
 		inputManager->addKey(rotateSingularCube);
-
+		*/
 		Key* speedUp = new Key(GLFW_KEY_LEFT_CONTROL);
 		speedUp->pressFunction = [this]() {
 			speed = 10.0f;
@@ -96,8 +97,8 @@ public:
 		m->changeFunction = [this, m]() {
 			float sensitivity = 0.05f;
 
-			double xoffset = (m->xPos - m->lastXPos) * sensitivity;
-			double yoffset = (m->yPos - m->lastYPos) * sensitivity;
+			double xoffset = (m->lastXPos - m->xPos) * sensitivity;
+			double yoffset = (m->lastYPos - m->yPos) * sensitivity;
 
 			camera->rotateEuler(glm::vec3(static_cast<float>(yoffset), static_cast<float>(xoffset), 0.0f));
 			};
@@ -109,22 +110,23 @@ public:
 	void movement(std::string way) { // Inefficient but I DONT CARE! for now
 		glm::vec3 change = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 direction = camera->getEulerRotation();
-		if (way == "forward") { 
-			change.x += cos(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
-			change.y += sin(glm::radians(direction.x)); change.z += sin(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
+		if (way == "forward") {
+			change.x += cos(glm::radians(direction.y + 90.0f));
+			change.y += sin(glm::radians(direction.x));
+			change.z -= sin(glm::radians(direction.y + 90.0f));
 		}
 		else if (way == "back") {
-			change.x -= cos(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
-			change.y -= sin(glm::radians(direction.x)); 
-			change.z -= sin(glm::radians(direction.y)) * cos(glm::radians(direction.x)); 
+			change.x -= cos(glm::radians(direction.y + 90.0f));
+			change.y -= sin(glm::radians(direction.x));
+			change.z += sin(glm::radians(direction.y + 90.0f));
 		}
-		else if (way == "left") { 
-			change.x -= cos(glm::radians(direction.y + 90.0f)); 
-			change.z -= sin(glm::radians(direction.y + 90.0f)); 
+		else if (way == "left") {
+			change.x -= cos(glm::radians(direction.y));
+			change.z += sin(glm::radians(direction.y));
 		}
 		else if (way == "right") {
-			change.x += cos(glm::radians(direction.y + 90.0f));
-			change.z += sin(glm::radians(direction.y + 90.0f));
+			change.x += cos(glm::radians(direction.y));
+			change.z -= sin(glm::radians(direction.y));
 		}
 		else if (way == "up") {
 			change.y += 1.0f;
@@ -143,5 +145,5 @@ private:
 	double dTime = 0.0f;
 	float speed = 5.0f;
 	Camera* camera;
-	Mesh* player;
+	InstanceGroup* player;
 };

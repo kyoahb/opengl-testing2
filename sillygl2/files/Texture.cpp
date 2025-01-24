@@ -17,12 +17,16 @@ Texture::Texture(TextureType _type, std::string _path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 4);
+	int _width, _height, nrChannels;
+	unsigned char* data = stbi_load(path.c_str(), &_width, &_height, &nrChannels, 4);
 	if (!data) {
 		std::cout << "Unable to load texture." << std::endl;
 		return;
 	}
+
+	// Now that texture has loaded, so width and height are known
+	width = _width;
+	height = _height;
 
 	if (true) {
 		std::cout << "Png texture detected, enabling Alpha channel" << std::endl;

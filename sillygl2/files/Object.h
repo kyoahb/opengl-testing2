@@ -42,6 +42,8 @@ public:
     const glm::vec3& getEulerRotation() const;
     const glm::vec3& getScale() const;
     int getId() const;
+	void setId(int _id);
+
 
     void move(const glm::vec3& change);
     void rotateEuler(const glm::vec3& _rotation);
@@ -61,7 +63,7 @@ protected:
 	std::vector<unsigned int> indices;
 	std::vector<Texture*> textures;
 	Shader* shader;
-
+    unsigned int VAO, EBO, VBO;
 
 public:
     VertexObject(
@@ -76,6 +78,7 @@ public:
     virtual ~VertexObject() = default;
 
     const std::vector<Vertex>& getVertices() const;
+	void setVertex(const Vertex& vertex, unsigned int index);
     const std::vector<unsigned int>& getIndices() const;
     const std::vector<Texture*>& getTextures() const;
     Shader* getShader() const;
