@@ -79,16 +79,12 @@ VertexObject::VertexObject(
     const std::string& _name,
     const std::vector<Vertex>& _vertices,
     const std::vector<unsigned int>& _indices,
-    const std::vector<Texture*>& _textures,
-    Shader* _shader,
+	const Material& _material,
     const glm::vec3& _position,
     const glm::quat& _rotation,
     const glm::vec3& _scale) 
-	: vertices(_vertices), indices(_indices), textures(_textures), shader(_shader), GameObject(_name, _position, _rotation, _scale)
+	: vertices(_vertices), indices(_indices), material(_material), GameObject(_name, _position, _rotation, _scale)
 {
-	if (shader == nullptr) {
-		spdlog::warn("Shader of object {} is null", name);
-	}
 	if (vertices.size() == 0) {
 		spdlog::warn("Vertices of object {} is empty", name);
 	}
@@ -99,9 +95,6 @@ VertexObject::VertexObject(
 		if (*std::max_element(indices.begin(), indices.end()) > vertices.size() - 1) { // Invalid indices
 			spdlog::warn("Indices of object {} are invalid", name);
 		}
-	}
-	if (textures.size() == 0) {
-		spdlog::warn("Textures of object {} is empty", name);
 	}
 }
 
@@ -116,9 +109,6 @@ void VertexObject::setVertex(const Vertex& vertex, unsigned int index) {
 const std::vector<unsigned int>& VertexObject::getIndices() const {
 	return indices;
 };
-const std::vector<Texture*>& VertexObject::getTextures() const {
-	return textures;
-};
-Shader* VertexObject::getShader() const {
-	return shader;
+const Material& VertexObject::getMaterial() const {
+	return material;
 };

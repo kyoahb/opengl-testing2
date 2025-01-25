@@ -21,7 +21,7 @@ public:
 		camera = new Camera();
 		renderer->setCamera(camera);
 
-		player = objectManager->addMesh(new Mesh("player"));
+		player = objectManager->createInstantiable("player");
 		player->attachCamera(camera);
 
 		Key* forward = new Key(GLFW_KEY_W);

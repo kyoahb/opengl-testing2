@@ -15,7 +15,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include "Vertex.h"
 #include "Shader_l.h"
-#include "Texture.h"
+#include "Material.h"
 
 class GameObject {
 protected:
@@ -61,8 +61,7 @@ class VertexObject : public GameObject {
 protected:
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Texture*> textures;
-	Shader* shader;
+	Material material;
     unsigned int VAO, EBO, VBO;
 
 public:
@@ -70,8 +69,7 @@ public:
         const std::string& _name = "Unnamed VertexObject",
         const std::vector<Vertex>& _vertices = {},
         const std::vector<unsigned int>& _indices = {},
-        const std::vector<Texture*>& _textures = {},
-        Shader* _shader = nullptr,
+        const Material& _material = Material(),
         const glm::vec3& _position = glm::vec3(0.0f),
         const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
         const glm::vec3& _scale = glm::vec3(1.0f));
@@ -80,7 +78,6 @@ public:
     const std::vector<Vertex>& getVertices() const;
 	void setVertex(const Vertex& vertex, unsigned int index);
     const std::vector<unsigned int>& getIndices() const;
-    const std::vector<Texture*>& getTextures() const;
-    Shader* getShader() const;
+    const Material& getMaterial() const;
 
 };

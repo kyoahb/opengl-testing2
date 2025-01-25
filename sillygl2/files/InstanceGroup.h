@@ -9,8 +9,7 @@ public:
 		const std::string& _name = "Unnamed InstanceGroup",
 		const std::vector<Vertex>& _vertices = {},
 		const std::vector<unsigned int>& _indices = {},
-		const std::vector<Texture*>& _textures = {},
-		Shader* _shader = nullptr,
+		const Material& _material = Material(),
 		const glm::vec3& _position = glm::vec3(0.0f),
 		const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
 		const glm::vec3& _scale = glm::vec3(1.0f));
@@ -40,8 +39,8 @@ public:
 	void setIndices(const std::vector<unsigned int>& _indices); // Replace indices with new indices
 	void addIndices(const std::vector<unsigned int>& _indices); // Add new indices on top of existing ones
 
-	// Shader
-	void setShader(Shader* _shader);
+	// Material
+	void setMaterial(const Material& _material);
 
 	// Model buffers
 	void calcAndSendModel(); // Calculate GROUP model and send to shader

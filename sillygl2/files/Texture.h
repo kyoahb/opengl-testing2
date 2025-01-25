@@ -5,12 +5,15 @@
 
 #include "Useful.h"
 #include <iostream>
-#include "stbimage/stb_image.h"
+#include <stb_image.h>
+#include "Shader_l.h"
 // ID (post-generation), type (diffuse, specular, etc.), and path to image file
 
 enum TextureType {
-	Diffuse = 0,
-	Specular = 1
+	None = 0,
+	Diffuse = 1,
+	Specular = 2,
+	Normal = 3,
 };
 
 class Texture {
@@ -21,8 +24,9 @@ public:
 	int width;
 	int height;
 
-	Texture(TextureType _type, std::string _path);
-	Texture() = default; // Default constructor because it wanted me to make one
+	Texture(TextureType _type, std::string _path); // Constructor that reads image file and sets up texture
+	Texture(); // Default constructor that sets up id
+	void use(unsigned int offset); // Activates and then binds texture to unit offset. Does not pass itself into shader.
 
 
 };

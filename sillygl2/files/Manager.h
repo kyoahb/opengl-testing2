@@ -17,12 +17,11 @@ public:
 
     InputManager* getInputManager();
 	ObjectManager* getObjectManager();
-    TextureManager* getTextureManager();
     Renderer* getRenderer();
     MenuManager* getMenuManager();
     GLFWwindow* getWindow();
 
-    void initialize(InputManager* inputMgr, ObjectManager* objectMgr, TextureManager* textureMgr, Renderer* rend, MenuManager* menuMgr, GLFWwindow* wind);
+    void initialize(InputManager* inputMgr, ObjectManager* objectMgr, Renderer* rend, MenuManager* menuMgr, GLFWwindow* wind);
 
 private:
     Manager();
@@ -33,7 +32,6 @@ private:
 
     InputManager* inputManager = nullptr;
     ObjectManager* objectManager = nullptr;
-	TextureManager* textureManager = nullptr;
     Renderer* renderer = nullptr;
     MenuManager* menuManager = nullptr;
     GLFWwindow* window = nullptr;

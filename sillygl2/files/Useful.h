@@ -31,12 +31,9 @@
 #endif
 
 template <typename T>
-void batchBuffer(unsigned int VAO, GLenum bufferType, unsigned int buffer, const std::vector<T>& dataList, GLenum usage) {
+void batchBuffer(GLenum bufferType, unsigned int buffer, const std::vector<T>& dataList, GLenum usage) {
     ASSERT_LOG(bufferType == GL_ARRAY_BUFFER || bufferType == GL_ELEMENT_ARRAY_BUFFER, "Attempted to batch invalid buffer type");
     ASSERT_LOG(usage == GL_STATIC_DRAW || usage == GL_DYNAMIC_DRAW || usage == GL_STREAM_DRAW, "Attempted to batch buffer with invalid usage");
-
-    glBindVertexArray(VAO);
-    ASSERT_LOG(glIsVertexArray(VAO), "Invalid VAO");
 
     glBindBuffer(bufferType, buffer);
     ASSERT_LOG(glIsBuffer(buffer), "Invalid Buffer");
@@ -47,19 +44,14 @@ void batchBuffer(unsigned int VAO, GLenum bufferType, unsigned int buffer, const
 }
 
 template <typename T>
-void singleBuffer(unsigned int VAO, GLenum bufferType, unsigned int buffer, std::size_t start, const T& data, GLenum usage) {
+void singleBuffer(GLenum bufferType, unsigned int buffer, std::size_t start, const T& data, GLenum usage) {
 	ASSERT_LOG(bufferType == GL_ARRAY_BUFFER || bufferType == GL_ELEMENT_ARRAY_BUFFER, "Attempted to batch invalid buffer type");
 	ASSERT_LOG(usage == GL_STATIC_DRAW || usage == GL_DYNAMIC_DRAW || usage == GL_STREAM_DRAW, "Attempted to batch buffer with invalid usage");
-
-    glBindVertexArray(VAO);
-    ASSERT_LOG(glIsVertexArray(VAO), "Invalid VAO");
 
     glBindBuffer(bufferType, buffer);
     ASSERT_LOG(glIsBuffer(buffer), "Invalid Buffer");
 	glBufferSubData(bufferType, start, sizeof(T), &data);
 	glBindBuffer(bufferType, 0);
-
-	glBindVertexArray(0);
 }
 void mat4Print(const glm::mat4& matrix);
 

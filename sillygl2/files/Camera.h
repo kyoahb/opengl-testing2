@@ -8,7 +8,7 @@ class Camera
 public:
 	bool updatedView = false; // If view matrix has been updated
 	glm::mat4 view = glm::mat4(1.0f); // View matrix
-	glm::mat4 perspective; // = glm::perspective(glm::radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f); // Perspective matrix
+	glm::mat4 projection = glm::mat4(1.0f);// glm::perspective(glm::radians(60.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f); // Perspective matrix
 	
 	Camera(); 
 

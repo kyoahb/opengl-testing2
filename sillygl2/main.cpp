@@ -8,7 +8,7 @@
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES  // Align types to 16 bytes
 
 #define GLM_ENABLE_EXPERIMENTAL
-
+#define STB_IMAGE_IMPLEMENTATION
 #include "MenuManager.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -62,15 +62,14 @@ int main() {
     }
 
     // load globals
-    TextureManager textureManager;
-    ObjectManager objectManager(&textureManager);
+    ObjectManager objectManager;
     InputManager inputManager(window);
     ScriptManager scriptManager;
     MenuManager menuManager(window);
     Renderer renderer(&objectManager);
     spdlog::info("Loading globals successful.");
 
-    Manager::getInstance().initialize(&inputManager, &objectManager, &textureManager, &renderer, &menuManager, window);
+    Manager::getInstance().initialize(&inputManager, &objectManager, &renderer, &menuManager, window);
 
 
 	// load scripts

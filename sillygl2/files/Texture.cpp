@@ -1,7 +1,11 @@
 #include "Texture.h"
 
+Texture::Texture() : id(), type(), path(), height(0), width(0) {
+	glGenTextures(1, &id);
+}
+
 Texture::Texture(TextureType _type, std::string _path)
-	: id(), type(_type), path(_path)
+	: id(), type(_type), path(_path), height(0), width(0)
 {
 	stbi_set_flip_vertically_on_load(true);
 	glGenTextures(1, &id);
@@ -20,7 +24,7 @@ Texture::Texture(TextureType _type, std::string _path)
 	int _width, _height, nrChannels;
 	unsigned char* data = stbi_load(path.c_str(), &_width, &_height, &nrChannels, 4);
 	if (!data) {
-		std::cout << "Unable to load texture." << std::endl;
+		ASSERT_LOG(false, "Failed to load texture: " + path);
 		return;
 	}
 
@@ -28,11 +32,14 @@ Texture::Texture(TextureType _type, std::string _path)
 	width = _width;
 	height = _height;
 
-	if (true) {
-		std::cout << "Png texture detected, enabling Alpha channel" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	}
+	spdlog::info("Loaded texture: " + path);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	stbi_image_free(data);
+}
+
+void Texture::use(unsigned int offset) {
+	glActiveTexture(GL_TEXTURE0 + offset);
+	glBindTexture(GL_TEXTURE_2D, id);
 }

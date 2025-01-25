@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <random>
 #include <iostream>
-#include "stbimage/stb_image.h"
 #include "Camera.h"
 #include "Shader_l.h"
 #include "Object.h"

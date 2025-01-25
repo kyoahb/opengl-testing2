@@ -5,9 +5,11 @@
 
 class TextureManager {
 public:
-	std::vector<Texture*> textures; // List of textures loaded
+	static std::vector<Texture*> textures; // List of textures loaded
 
-	TextureManager();
+	static Texture* getTextureByPath(std::string _path); // Returns texture with given path
 
-	Texture* createTexture(TextureType _type, std::string _path); // Adds texture to list of textures
+	static Texture* createTexture(TextureType _type, std::string _path); // Adds texture to list of textures
+
+	static Texture* defaultTexture(TextureType _type); // Returns default texture (diffuse, specular, etc.)
 };

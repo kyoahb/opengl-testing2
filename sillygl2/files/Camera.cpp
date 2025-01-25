@@ -1,7 +1,8 @@
 #include "Camera.h"
-
+#include "Manager.h"
 Camera::Camera() {
 	view = glm::lookAt(position, position + cameraFront, cameraUp);
+	projection = glm::perspective(glm::radians(60.0f), (float)Manager::getInstance().SCR_WIDTH / (float)Manager::getInstance().SCR_HEIGHT, 0.1f, 100.0f);
 }
 
 void Camera::calculateFront() {

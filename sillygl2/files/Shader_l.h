@@ -76,25 +76,40 @@ public:
     {
         glUseProgram(ID);
     }
+
+	// Returns uniform location of a uniform in the shader
+	GLuint getLocation(const std::string& name) const {
+		GLuint location = glGetUniformLocation(ID, name.c_str());
+
+        // Uniform does not exist error
+        ASSERT_LOG(location != -1, "Uniform " + name + " has been optimised out / has not been found in " + vertPath + " " + fragPath);
+        
+        return location;
+	}
+
     // utility uniform functions
     // ------------------------------------------------------------------------
     void setBool(const std::string& name, bool value) const
     {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+        glUniform1i(getLocation(name.c_str()), (int)value);
     }
     // ------------------------------------------------------------------------
     void setInt(const std::string& name, int value) const
     {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+        glUniform1i(getLocation(name.c_str()), value);
     }
     // ------------------------------------------------------------------------
     void setFloat(const std::string& name, float value) const
     {
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+        glUniform1f(getLocation(name.c_str()), value);
     }
+	void setVec3(const std::string& name, glm::vec3 value) const
+	{
+		glUniform3fv(getLocation(name.c_str()), 1, glm::value_ptr(value));
+	}
     void setMat4(const std::string& name, glm::mat4 value) const
     {
-        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+        glUniformMatrix4fv(getLocation(name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 private:
     // utility function for checking shader compilation/linking errors.

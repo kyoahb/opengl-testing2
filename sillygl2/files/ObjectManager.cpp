@@ -1,8 +1,6 @@
 #include "ObjectManager.h"
 
-ObjectManager::ObjectManager(TextureManager* _textureManager) : textureManager(_textureManager) {
-
-}
+ObjectManager::ObjectManager() {}
 
 void ObjectManager::addInstanceGroup(InstanceGroup* instanceGroup) {
 	instanceGroup->setId(maxID++);
@@ -13,10 +11,10 @@ std::vector<InstanceGroup*>* ObjectManager::getInstanceGroups() {
 	return &instanceGroups;
 }
 
-InstanceGroup* ObjectManager::addMesh(Mesh* mesh) {
+/*InstanceGroup* ObjectManager::addMesh(Mesh* mesh) {
 	std::vector<Texture*> textures = mesh->getTextures();
 	if (textures.size() == 0) {
-		Texture* texture = textureManager->createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
+		Texture* texture = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
 		textures = { texture };
 	}
 
@@ -25,13 +23,31 @@ InstanceGroup* ObjectManager::addMesh(Mesh* mesh) {
 		shader = new Shader("shaders/instance_shader.vert", "shaders/shader.frag");
 	}
 
-	InstanceGroup* instanceGroup = new InstanceGroup(mesh->getName(), mesh->getVertices(), mesh->getIndices(), textures, shader, mesh->getPosition(), mesh->getQuatRotation(), mesh->getScale());
+	InstanceGroup* instanceGroup = new InstanceGroup(mesh->getName(), mesh->getVertices(), mesh->getIndices(), textures, shader);
 
 	Instance* instance = new Instance("instance", mesh->getPosition(), mesh->getQuatRotation(), mesh->getScale());
 	instanceGroup->addInstance(instance);
 
 	addInstanceGroup(instanceGroup);
 	return instanceGroup;
+}*/
+
+InstanceGroup* ObjectManager::createInstantiable(
+	const std::string& _name,
+	const std::vector<Vertex>& _vertices,
+	const std::vector<unsigned int>& _indices,
+	const Material& _material,
+	const glm::vec3& _position,
+	const glm::quat& _rotation,
+	const glm::vec3& _scale) {
+
+	InstanceGroup* instanceGroup = new InstanceGroup(_name, _vertices, _indices, _material);
+	Instance* instance = new Instance("instance", _position, _rotation, _scale);
+
+	instanceGroups.push_back(instanceGroup);
+
+	return instanceGroup;
+
 }
 
 InstanceGroup* ObjectManager::createCubeInstanceGroup(float width, float height, float depth, glm::vec3 centre, std::string name) {
@@ -64,10 +80,12 @@ InstanceGroup* ObjectManager::createCubeInstanceGroup(float width, float height,
 		3, 2, 6,
 		6, 7, 3
 	};
-	Texture* texture = textureManager->createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
-	textures = { texture };
+	Texture* texture = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
 
-	InstanceGroup* cubes = new InstanceGroup(name, vertices, indices, textures, new Shader("shaders/instance_shader.vert", "shaders/shader.frag"), centre);
+	Material material = Material();
+	material.diffuse = texture;
+
+	InstanceGroup* cubes = new InstanceGroup(name, vertices, indices, material, centre);
 	addInstanceGroup(cubes);
 
 	return cubes;

@@ -8,7 +8,7 @@ Renderer::Renderer(ObjectManager* _objectManager) :
 	Manager* manager = &Manager::getInstance();
     // Setup globally applied matrices
     model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    projection = glm::perspective(glm::radians(manager->FOV), (float)manager->SCR_WIDTH / (float)manager->SCR_HEIGHT, 0.1f, 100.0f);
+    //glm::perspective(glm::radians(manager->FOV), (float)manager->SCR_WIDTH / (float)manager->SCR_HEIGHT, 0.1f, 100.0f);
 
 	// ubo buffer object, separate from VAO
 	glGenBuffers(1, &UBOmatrices);
@@ -30,7 +30,13 @@ Renderer::Renderer(ObjectManager* _objectManager) :
 void Renderer::setCamera(Camera* camera) {
     globalCamera = camera;
     view = &(globalCamera->view);
+	projection = (globalCamera->projection);
 	updatedView = &(globalCamera->updatedView);
+
+	// buffer over UBO
+	glBindBuffer(GL_UNIFORM_BUFFER, UBOmatrices); // send view and projection matrices to shader(s)
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(*view));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projection));
 }
 
 void Renderer::preRenderTest() {
@@ -47,10 +53,10 @@ void Renderer::renderTest(float deltaTime) {
 	glClearColor(0.5f, 0.0f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
+	// UBO Buffer group
 	glBindBuffer(GL_UNIFORM_BUFFER, UBOmatrices); // send view and projection matrices to shader(s)
+	// View buffer
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(*view));
-	//glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projection));
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	//for (auto& mesh : *(meshManager->getMeshes())) {
 	//	mesh->drawSingleTexture();
@@ -59,6 +65,7 @@ void Renderer::renderTest(float deltaTime) {
 	for (InstanceGroup* group : groups) {
 		group->draw();
 	}
+	groups[0]->getInstances()[0]->rotateQuat(rotation);
 	
 	//for (Instance* cube : groups[0]->instances) {
 	//	cube->rotateQuat(rotation);

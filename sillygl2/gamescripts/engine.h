@@ -223,7 +223,7 @@ public:
 	void ScaleDragV3(T* object, const glm::vec3& offset = glm::vec3(1.0f)) {
 		ImGui::PushID("##xx");
 		ImGui::PushItemWidth(100); // Input fields have a max width 
-		glm::vec3 tempScale = object->getScale() * offset; // Copy of scale
+		glm::vec3 tempScale = offset * object->getScale(); // Copy of scale
 		if (ImGui::DragFloat("X", &tempScale.x, 0.1f, 0.0f, 100.0f, "%.1f") || ImGui::DragFloat("Y", &tempScale.y, 0.1f, 0.0f, 100.0f, "%.1f") || ImGui::DragFloat("Z", &tempScale.z, 0.1f, 0.0f, 100.0f, "%.1f")) {
 			glm::vec3 change = (tempScale / offset) - object->getScale();
 			object->addScale(change);
@@ -313,7 +313,7 @@ public:
 	void instanceGroupTree(InstanceGroup* instanceGroup, bool relativePositioning, bool rotationsAreQuat) {
 		std::vector<Instance*> instances = instanceGroup->getInstances();
 
-		Shader* shader = instanceGroup->getShader();
+		Shader* shader = instanceGroup->getMaterial().shader;
 		// Instance Group characteristics
 		if (ImGui::CollapsingHeader("Position")) {
 
@@ -330,19 +330,30 @@ public:
 		if (ImGui::CollapsingHeader("Scale")) {
 			ScaleDragV3(instanceGroup);
 		}
-		if (ImGui::CollapsingHeader("Appearance")) {
-
+		if (ImGui::CollapsingHeader("Material")) {
+			std::string materialName = "Material: " + instanceGroup->getMaterial().name;
+			ImGui::Text(materialName.c_str());
+			
 			if (ImGui::TreeNode("Textures")) {
-				std::vector<Texture*> textures = instanceGroup->getTextures();
-				for (int i = 0; i < textures.size(); i++) {
-					Texture* texture = textures[i];
-					std::string textureName = "Texture " + std::to_string(i);
-					if (ImGui::TreeNode(textureName.c_str())) {
-						ImGui::Text("Texture ID: %d", texture->id);
-						ImGui::Text("Texture Path: %s", texture->path.c_str());
-						ImGui::Image(texture->id, ImVec2(texture->width, texture->height));
-						ImGui::TreePop();
-					}
+				Texture* diffuse = instanceGroup->getMaterial().diffuse;
+				if (diffuse != nullptr) {
+					ImGui::Text("Diffuse Texture ID: %d", diffuse->id);
+					ImGui::Text("Diffuse Texture Path: %s", diffuse->path.c_str());
+					ImGui::Image(diffuse->id, ImVec2(100, 100));
+				}
+
+				Texture* specular = instanceGroup->getMaterial().specular;
+				if (specular != nullptr) {
+					ImGui::Text("Specular Texture ID: %d", specular->id);
+					ImGui::Text("Specular Texture Path: %s", specular->path.c_str());
+					ImGui::Image(specular->id, ImVec2(100, 100));
+				}
+
+				Texture* normal = instanceGroup->getMaterial().normal;
+				if (normal != nullptr) {
+					ImGui::Text("Normal Texture ID: %d", normal->id);
+					ImGui::Text("Normal Texture Path: %s", normal->path.c_str());
+					ImGui::Image(normal->id, ImVec2(100, 100));
 				}
 				ImGui::TreePop();
 			}
@@ -406,12 +417,13 @@ public:
 				glm::vec3 posOffset = glm::vec3(0.0f);
 				glm::vec3 rotEOffset = glm::vec3(0.0f);
 				glm::quat rotQOffset = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-				glm::vec3 scaleOffset = glm::vec3(0.0f);
+				glm::vec3 scaleOffset = glm::vec3(1.0f);
 				if (!relativePositioning) {
 					posOffset = instanceGroup->getPosition();
 					rotEOffset = instanceGroup->getEulerRotation();
 					rotQOffset = instanceGroup->getQuatRotation();
 					scaleOffset = instanceGroup->getScale();
+					
 				}
 				for (int i = 0; i < instances.size(); i++) {
 					Instance* instance = instances.at(i);

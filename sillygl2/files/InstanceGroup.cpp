@@ -5,12 +5,11 @@ InstanceGroup::InstanceGroup(
 	const std::string& _name,
 	const std::vector<Vertex>& _vertices,
 	const std::vector<unsigned int>& _indices,
-	const std::vector<Texture*>& _textures,
-	Shader* _shader,
+	const Material& _material,
 	const glm::vec3& _position,
 	const glm::quat& _rotation,
 	const glm::vec3& _scale)
-	: VertexObject(_name, _vertices, _indices, _textures, _shader, _position, _rotation, _scale) {
+	: VertexObject(_name, _vertices, _indices, _material, _position, _rotation, _scale) {
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -56,18 +55,8 @@ InstanceGroup::InstanceGroup(
 
 	glBindVertexArray(0);
 
-	if (shader == nullptr) {
-		shader = new Shader("shaders/instance_shader.vert", "shaders/shader.frag"); // Use default shader if one is not provided
-	}
-
-	if (textures.size() == 0) {
-		// NOTE: This is slow, should be using texturemanager to ensure that, if a default texture is not provided, at least it can use a pre-loaded one
-		// However, there is no hook into texture manager here, so this is a temporary solution
-		textures.push_back(new Texture(TextureType::Diffuse, "textures/hlbox.jpg")); // Use default texture if one is not provided
-	}
-
-	shader->use();
-	shader->setMat4("group", glm::mat4(1.0f));
+	material.use();
+	material.shader->setMat4("group", glm::mat4(1.0f));
 }
 
 Camera* InstanceGroup::getAttachedCamera() {
@@ -83,21 +72,20 @@ bool InstanceGroup::isCameraAttached() {
 }
 
 void InstanceGroup::draw() {
-	shader->use();
+	material.use();
 
-	glBindTexture(GL_TEXTURE_2D, textures[0]->id);
 	glBindVertexArray(VAO);
 	updateInstances();
 	glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0, instances.size());
 	glBindVertexArray(0);
 }
 
-void InstanceGroup::setShader(Shader* _shader) {
-	shader = _shader;
+void InstanceGroup::setMaterial(const Material& _material) {
+	material = _material;
 
 	// New shader setup
-	shader->use();
-	shader->setMat4("group", glm::mat4(1.0f));
+	material.use();
+	material.shader->setMat4("group", glm::mat4(1.0f));
 	calcAndSendModel(); // Send actual model to shader
 }
 
@@ -147,7 +135,8 @@ void InstanceGroup::setVertex(const Vertex& vertex, unsigned int index) {
 	VertexObject::setVertex(vertex, index);
 
 	// send new data to GPU
-	singleBuffer(VAO, GL_ARRAY_BUFFER, VBO, index * sizeof(vertex), vertex, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	singleBuffer(GL_ARRAY_BUFFER, VBO, index * sizeof(vertex), vertex, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::removeVertex(unsigned int index) {
@@ -168,20 +157,23 @@ void InstanceGroup::removeVertex(unsigned int index) {
 		}
 	}
 
-	batchBuffer(VAO, GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::addVertices(const std::vector<Vertex>& _vertices) {
 	// Add the new vertices to current
 	vertices.insert(vertices.end(), _vertices.begin(), _vertices.end());
-
-	batchBuffer(VAO, GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
+	
+	glBindVertexArray(VAO);
+	batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::setVertices(const std::vector<Vertex>& _vertices) {
 	vertices = _vertices;
-
-	batchBuffer(VAO, GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
+	// Some thought about doing VBO / EBO buffer changes in a batch before draw but for now its okay
+	glBindVertexArray(VAO);
+	batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::setIndices(const std::vector<unsigned int>& _indices) {
@@ -197,7 +189,8 @@ void InstanceGroup::setIndices(const std::vector<unsigned int>& _indices) {
 		indices.push_back(index - min );
 	}
 
-	batchBuffer(VAO, GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	batchBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::addIndices(const std::vector<unsigned int>& _indices) {
@@ -210,7 +203,8 @@ void InstanceGroup::addIndices(const std::vector<unsigned int>& _indices) {
 		indices.push_back(index);
 	}
 
-	batchBuffer(VAO, GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	batchBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::addVerticesIndices(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices) {
@@ -234,8 +228,9 @@ void InstanceGroup::addVerticesIndices(const std::vector<Vertex>& _vertices, con
 		indices.push_back(index - min + verticesSize);
 	}
 
-	batchBuffer(VAO, GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
-	batchBuffer(VAO, GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
+	batchBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
 
 }
 
@@ -246,8 +241,8 @@ void InstanceGroup::calcAndSendModel() {
 	// To fix this, it would require group_rotation_and_scale_matrix * instance * group_position_matrix, but this is long
 
 	glm::mat4 model = GameObject::calculateModelMatrix();
-	shader->use();
-	shader->setMat4("group", model);
+	material.use();
+	material.shader->setMat4("group", model);
 }
 
 const std::vector<Instance*>& InstanceGroup::getInstances() {
@@ -291,13 +286,15 @@ void InstanceGroup::updateInstances() {
 		for (Instance* instance : instances) {
 			matrices.push_back(instance->model);
 		}
-		batchBuffer(VAO, GL_ARRAY_BUFFER, modelBuffer, matrices, GL_STATIC_DRAW);
+		batchBuffer(GL_ARRAY_BUFFER, modelBuffer, matrices, GL_STATIC_DRAW);
 	}
 	else {
 		// Individual update calls
 		for (Instance* instance : instancesToUpdate) {
 			// May be inefficient as VAO is bound and rebound several times
-			singleBuffer(VAO, GL_ARRAY_BUFFER, modelBuffer, instance->modelBufferIndex * sizeof(glm::mat4), instance->model, GL_STATIC_DRAW);
+			//glBindBuffer(GL_ARRAY_BUFFER, modelBuffer);
+			//glBufferSubData(GL_ARRAY_BUFFER, instance->modelBufferIndex * sizeof(glm::mat4), sizeof(glm::mat4), &(instance->model));
+			singleBuffer(GL_ARRAY_BUFFER, modelBuffer, instance->modelBufferIndex * sizeof(glm::mat4), instance->model, GL_STATIC_DRAW);
 		}
 	}
 
@@ -308,7 +305,8 @@ void InstanceGroup::batchResendModelMatrices() {
 	for (Instance* instance : instances) {
 		matrices.push_back(instance->model);
 	}
-	batchBuffer(VAO, GL_ARRAY_BUFFER, modelBuffer, matrices, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	batchBuffer(GL_ARRAY_BUFFER, modelBuffer, matrices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::resizeModelBuffer() {
@@ -342,7 +340,6 @@ void InstanceGroup::resizeModelBuffer() {
 	glBindBuffer(GL_COPY_READ_BUFFER, 0);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 }
 
 void InstanceGroup::addInstance(Instance* instance) {
