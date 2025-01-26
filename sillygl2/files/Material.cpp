@@ -9,8 +9,7 @@ Material::Material(
 	float _shininess,
 	Texture* _diffuse,
 	Texture* _specular,
-	Texture* _normal,
-	Shader* _shader)
+	Texture* _normal)
 	: name(_name),
 	diffuseColor(_diffuseColor),
 	specularColor(_specularColor),
@@ -19,8 +18,7 @@ Material::Material(
 	shininess(_shininess),
 	diffuse(_diffuse),
 	specular(_specular),
-	normal(_normal),
-	shader(_shader)
+	normal(_normal)
 {
 	if (diffuse == nullptr) {
 		diffuse = TextureManager::defaultTexture(TextureType::Diffuse);
@@ -31,16 +29,11 @@ Material::Material(
 	if (normal == nullptr) {
 		normal = TextureManager::defaultTexture(TextureType::Normal);
 	}
-	if (shader == nullptr) {
-		shader = new Shader("shaders/material_shader.vert", "shaders/material_shader.frag");
-	}
-
-	apply();
 }
 
-void Material::apply() const {
+void Material::apply(Shader* _shader) const {
 
-	shader->use();
+	_shader->use();
 	//shader->setVec3("material.diffuse", diffuseColor);
 	//shader->setVec3("material.specular", specularColor);
 	//shader->setVec3("material.ambient", ambientColor);
@@ -48,7 +41,7 @@ void Material::apply() const {
 	//shader->setFloat("material.shininess", shininess);
 
 	diffuse->use(0);
-	shader->setInt("material.texture_diffuse", 0);
+	_shader->setInt("material.texture_diffuse", 0);
 
 	//specular->use(1);	
 	//shader->setInt("material.texture_specular", 1);
@@ -58,7 +51,6 @@ void Material::apply() const {
 }
 
 void Material::use() const {
-	shader->use();
 	diffuse->use(0);
 	specular->use(1);
 	normal->use(2);

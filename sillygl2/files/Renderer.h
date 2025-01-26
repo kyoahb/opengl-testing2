@@ -9,6 +9,7 @@
 #include "TextureManager.h"
 #include "Vertex.h"
 #include "ObjectManager.h"
+#include "GameObject.h"
 
 class Manager;
 
@@ -31,4 +32,6 @@ private:
 	glm::mat4 projection, model; // Projection and Model matrices
     glm::mat4* view; // only initialised if camera is set
 	bool* updatedView;
+
+	Object* deleteThisAfterTest;
 };

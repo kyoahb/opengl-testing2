@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="dlls\glad.c" />
     <ClCompile Include="files\Camera.cpp" />
+    <ClCompile Include="files\GameObject.cpp" />
     <ClCompile Include="files\Input.cpp" />
     <ClCompile Include="files\Instance.cpp" />
     <ClCompile Include="files\InstanceGroup.cpp" />
@@ -157,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="files\Camera.h" />
+    <ClInclude Include="files\GameObject.h" />
     <ClInclude Include="files\Input.h" />
     <ClInclude Include="files\Instance.h" />
     <ClInclude Include="files\InstanceGroup.h" />

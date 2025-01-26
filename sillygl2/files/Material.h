@@ -7,7 +7,6 @@ public:
 	Texture* diffuse;
     Texture* specular;
     Texture* normal;
-	Shader* shader;
     glm::vec3 diffuseColor;
     glm::vec3 specularColor;
     glm::vec3 ambientColor;
@@ -25,10 +24,9 @@ public:
         float _shininess = 32.0f,
         Texture* _diffuse = nullptr,
         Texture* _specular = nullptr,
-        Texture* _normal = nullptr,
-        Shader* _shader = nullptr);
+        Texture* _normal = nullptr);
 
-	void apply() const; // Applies material to shader (setup)
+	void apply(Shader* _shader) const; // Applies material to shader (setup)
     void use() const; // Activates shader and material textures
 
 };

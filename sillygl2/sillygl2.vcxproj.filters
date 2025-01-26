@@ -81,6 +81,9 @@
     <ClCompile Include="dlls\glad.c">
       <Filter>dependencies</Filter>
     </ClCompile>
+    <ClCompile Include="files\GameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="files\Camera.h">
@@ -147,6 +150,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="files\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="files\GameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -313,7 +313,7 @@ public:
 	void instanceGroupTree(InstanceGroup* instanceGroup, bool relativePositioning, bool rotationsAreQuat) {
 		std::vector<Instance*> instances = instanceGroup->getInstances();
 
-		Shader* shader = instanceGroup->getMaterial().shader;
+		//Shader* shader = instanceGroup->getMaterial().shader;
 		// Instance Group characteristics
 		if (ImGui::CollapsingHeader("Position")) {
 
@@ -358,9 +358,9 @@ public:
 				ImGui::TreePop();
 			}
 			if (ImGui::TreeNode("Shader")) {
-				ImGui::Text("Shader ID: %d", shader->ID);
-				ImGui::Text("Vertex Shader Path: %s", shader->vertPath.c_str());
-				ImGui::Text("Fragment Shader Path: %s", shader->fragPath.c_str());
+				//ImGui::Text("Shader ID: %d", shader->ID);
+				//ImGui::Text("Vertex Shader Path: %s", shader->vertPath.c_str());
+				//ImGui::Text("Fragment Shader Path: %s", shader->fragPath.c_str());
 				ImGui::TreePop();
 			}
 		}

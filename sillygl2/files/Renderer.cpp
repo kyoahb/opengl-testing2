@@ -43,8 +43,19 @@ void Renderer::preRenderTest() {
 
 	InstanceGroup* cubes = objectManager->createCubeInstanceGroup(1.0f, 1.0f, 1.0f, glm::vec3(0.0f), "cubes");
 	for (int i = 0; i < 10; i++) {
-		objectManager->addCube(cubes, rand_vec3(-5.0f, 5.0f), glm::vec3(0.0f), rand_vec3(0.1f, 5.0f), "cube");
+		//objectManager->addCube(cubes, rand_vec3(-5.0f, 5.0f), glm::vec3(0.0f), rand_vec3(0.1f, 5.0f), "cube");
 	}
+
+	deleteThisAfterTest = new Object("cool");
+	deleteThisAfterTest->addRenderComponent();
+	deleteThisAfterTest->renderComponent->addVerticesIndices(cubes->getVertices(), cubes->getIndices());
+
+	Material* mat = new Material();
+	mat->diffuse = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
+
+	deleteThisAfterTest->renderComponent->setMaterial(std::shared_ptr<Material>(mat));
+	deleteThisAfterTest->draw();
+	
 
 }
 
@@ -65,7 +76,8 @@ void Renderer::renderTest(float deltaTime) {
 	for (InstanceGroup* group : groups) {
 		group->draw();
 	}
-	groups[0]->getInstances()[0]->rotateQuat(rotation);
+	deleteThisAfterTest->draw();
+	//groups[0]->getInstances()[0]->rotateQuat(rotation);
 	
 	//for (Instance* cube : groups[0]->instances) {
 	//	cube->rotateQuat(rotation);

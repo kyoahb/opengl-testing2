@@ -56,7 +56,7 @@ InstanceGroup::InstanceGroup(
 	glBindVertexArray(0);
 
 	material.use();
-	material.shader->setMat4("group", glm::mat4(1.0f));
+	//material.shader->setMat4("group", glm::mat4(1.0f));
 }
 
 Camera* InstanceGroup::getAttachedCamera() {
@@ -76,7 +76,9 @@ void InstanceGroup::draw() {
 
 	glBindVertexArray(VAO);
 	updateInstances();
-	glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0, instances.size());
+	if (instances.size() > 0) {
+		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0, instances.size());
+	}
 	glBindVertexArray(0);
 }
 
@@ -85,7 +87,7 @@ void InstanceGroup::setMaterial(const Material& _material) {
 
 	// New shader setup
 	material.use();
-	material.shader->setMat4("group", glm::mat4(1.0f));
+	//material.shader->setMat4("group", glm::mat4(1.0f));
 	calcAndSendModel(); // Send actual model to shader
 }
 
@@ -242,7 +244,7 @@ void InstanceGroup::calcAndSendModel() {
 
 	glm::mat4 model = GameObject::calculateModelMatrix();
 	material.use();
-	material.shader->setMat4("group", model);
+	//material.shader->setMat4("group", model);
 }
 
 const std::vector<Instance*>& InstanceGroup::getInstances() {
