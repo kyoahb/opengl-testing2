@@ -46,17 +46,28 @@ void Renderer::preRenderTest() {
 		//objectManager->addCube(cubes, rand_vec3(-5.0f, 5.0f), glm::vec3(0.0f), rand_vec3(0.1f, 5.0f), "cube");
 	}
 
-	deleteThisAfterTest = new Object("cool");
+	/*deleteThisAfterTest = new Object("cool");
 	deleteThisAfterTest->addRenderComponent();
 	deleteThisAfterTest->renderComponent->addVerticesIndices(cubes->getVertices(), cubes->getIndices());
+
+	deleteThisAfterTest->renderComponent->setMaterial(std::shared_ptr<Material>(mat));
+	deleteThisAfterTest->draw();*/
 
 	Material* mat = new Material();
 	mat->diffuse = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
 
-	deleteThisAfterTest->renderComponent->setMaterial(std::shared_ptr<Material>(mat));
-	deleteThisAfterTest->draw();
+	deleteThisAfterTestGroup = new InstanceGroup2("cool2");
+	deleteThisAfterTestGroup->addRenderComponent();
+	deleteThisAfterTestGroup->renderComponent->addVerticesIndices(cubes->getVertices(), cubes->getIndices());
+	deleteThisAfterTestGroup->renderComponent->setMaterial(std::shared_ptr<Material>(mat));
 	
-
+	for (int i = 0; i < 10; i++) {
+		std::shared_ptr<Instance2> ig = deleteThisAfterTestGroup->addInstance("coolmoment");
+		ig->transform.setPosition(rand_vec3(-5.0f, 5.0f));
+	}
+	deleteThisAfterTestGroup->draw();
+	deleteThisAfterTestGroup->renderComponent->getShader()->printActiveAttributes();
+	deleteThisAfterTestGroup->renderComponent->getShader()->printActiveUniforms();
 }
 
 void Renderer::renderTest(float deltaTime) {
@@ -76,7 +87,8 @@ void Renderer::renderTest(float deltaTime) {
 	for (InstanceGroup* group : groups) {
 		group->draw();
 	}
-	deleteThisAfterTest->draw();
+	//deleteThisAfterTest->draw();
+	deleteThisAfterTestGroup->draw();
 	//groups[0]->getInstances()[0]->rotateQuat(rotation);
 	
 	//for (Instance* cube : groups[0]->instances) {

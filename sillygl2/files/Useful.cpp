@@ -1,5 +1,13 @@
 #include "Useful.h"
 
+void assert_log(bool condition, const std::string& message, const char* file, int line) {
+    if (!condition) {
+        spdlog::error("Assertion failed: {} at {}:{}\n", message, file, line);
+        __debugbreak();
+        std::exit(EXIT_FAILURE);
+    }
+}
+
 void mat4Print(const glm::mat4& matrix) {
 	for (int i = 0; i < 4; i++) {
 		std::cout << matrix[i][0] << " " << matrix[i][1] << " " << matrix[i][2] << " " << matrix[i][3] << std::endl;

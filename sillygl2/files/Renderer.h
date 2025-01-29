@@ -34,4 +34,5 @@ private:
 	bool* updatedView;
 
 	Object* deleteThisAfterTest;
+	InstanceGroup2* deleteThisAfterTestGroup;
 };

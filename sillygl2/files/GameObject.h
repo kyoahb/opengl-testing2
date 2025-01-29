@@ -16,9 +16,7 @@ private:
 
 public:
 	bool transformModified = false;
-	std::weak_ptr<Object> object;
 	Transform(
-		std::weak_ptr<Object> _object,
 		const glm::vec3& _position = glm::vec3(0.0f),
 		const glm::quat& _rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
 		const glm::vec3& _scale = glm::vec3(1.0f));
@@ -51,21 +49,17 @@ class RenderComponent {
 private:
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-	GLuint VAO, VBO, EBO, modelBuffer;
-	unsigned int modelBufferSize; // Allow for greater size for insatancegroups 
 	std::unique_ptr<Shader> shader;
 
 public:
-	std::weak_ptr<Object> object;
+	GLuint VAO, VBO, EBO;
 	std::shared_ptr<Material> material;
 
 	RenderComponent(
-		std::weak_ptr<Object> _object,
 		const std::vector<Vertex>& _vertices = {},
 		const std::vector<unsigned int>& _indices = {},
 		std::shared_ptr<Material> _material = std::make_shared<Material>(),
-		std::unique_ptr<Shader> _shader = std::make_unique<Shader>("shaders/material_shader.vert", "shaders/material_shader.frag"),
-		unsigned int _modelBufferSize = 1);
+		std::unique_ptr<Shader> _shader = std::make_unique<Shader>("shaders/material_shader.vert", "shaders/material_shader.frag"));
 
 	// getters
 	const std::vector<Vertex>& getVertices() const;
@@ -86,9 +80,9 @@ public:
 	void addIndices(const std::vector<unsigned int>& _indices);
 	void addVerticesIndices(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices);
 
-	void draw() const;
-	void setupBuffers();
-	void setupMaterial();
+	void draw() const; // Sets material, and draws single object using vertices and indices.
+	void setupBuffers(); // Sets up VAO, VBO, EBO, and modelBuffer
+	void setupMaterial(); // Sets up material by binding it to shader
 
 };
 
@@ -96,7 +90,7 @@ class PhysicsComponent {
 
 };
 
-class Object : public std::enable_shared_from_this<Object> {
+class Object{
 public:
 	unsigned int id;
 	std::string name;
@@ -110,7 +104,48 @@ public:
 
 	void addRenderComponent();
 
-	void draw();
-	void update();
+	void draw(); // Update object if necessary and then draw. Requires a render component
+	void update(); // Resends group matrix if transform has been updated
 
+};
+
+class Instance2 {
+public:
+	unsigned int id;
+	unsigned int modelBufferIndex;
+	unsigned int relativeInstanceId;
+	std::string name;
+	Transform transform;
+	// No render component as it is shared with the instance group
+
+	Instance2(const std::string& _name = "Unnamed Instance");
+
+};
+
+class InstanceGroup2 : public Object {
+public:
+	std::vector<std::shared_ptr<Instance2>> instances;
+	GLuint modelBuffer;
+	InstanceGroup2(const std::string& _name = "Unnamed InstanceGroup");
+
+	void addRenderComponent();
+
+	void draw();
+	void addInstance(std::shared_ptr<Instance2> instance);
+	std::shared_ptr<Instance2> addInstance(const std::string& name);
+	void removeInstance(std::shared_ptr<Instance2> instance);
+	std::shared_ptr<Instance2> getInstanceById(unsigned int id);
+	std::vector<std::shared_ptr<Instance2>> getInstancesByName(std::string name);
+
+private:
+	void setupModelBuffer(); // Setup model buffer for instances, reserve space
+
+	void updateInstances();
+	void resizeModelBuffer(); // Increase model buffer size by modelBufferIncrement
+
+private:
+	unsigned int modelBufferIncrement = 1000; // How much to increase model buffer size by when necessary
+	unsigned int nextModelBufferIndex = 0; // Next free index in the model buffer
+	unsigned int modelBufferSize = 1000; // Size of model buffer (in matrices)
+	unsigned int nextInstanceId = 0; // Next free instance id
 };

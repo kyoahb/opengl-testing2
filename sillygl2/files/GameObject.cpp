@@ -2,11 +2,10 @@
 
 /* Transform */
 Transform::Transform(
-	std::weak_ptr<Object> _object,
 	const glm::vec3& _position,
 	const glm::quat& _rotation,
 	const glm::vec3& _scale)
-	: object(_object), position(_position), scale(_scale), rotation(_rotation)
+	: position(_position), scale(_scale), rotation(_rotation)
 {
 	if (scale == glm::vec3(0.0f)) {
 		spdlog::warn("Scale of object transform is 0.0f, setting to 1.0f");
@@ -104,12 +103,10 @@ void Transform::calculateModelMatrix() {
 /* RenderComponent */
 
 RenderComponent::RenderComponent(
-	std::weak_ptr<Object> _object,
 	const std::vector<Vertex>& _vertices,
 	const std::vector<unsigned int>& _indices,
 	std::shared_ptr<Material> _material,
-	std::unique_ptr<Shader> _shader,
-	unsigned int _modelBufferSize) : object(_object), vertices(_vertices), indices(_indices), material(_material), modelBufferSize(_modelBufferSize)
+	std::unique_ptr<Shader> _shader) : vertices(_vertices), indices(_indices), material(_material)
 {
 	shader = std::move(_shader);
 	setupBuffers();
@@ -231,7 +228,6 @@ void RenderComponent::addVerticesIndices(const std::vector<Vertex>& _vertices, c
 }
 
 void RenderComponent::draw() const {
-	//shader->setMat4("model", object->transform.getModelMatrix());
 	shader->use();
 	material->use();
 
@@ -263,10 +259,76 @@ void RenderComponent::setupBuffers() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 	glEnableVertexAttribArray(2);
 
-	/*
+	glBindVertexArray(0);
+}
+
+void RenderComponent::setupMaterial() {
+	material->apply(shader.get());
+}
+
+/* Object */
+Object::Object(const std::string& _name) : name(_name), transform(Transform()) {
+	//renderComponent = std::make_unique<RenderComponent>(std::make_shared<Object>(this));
+};
+
+void Object::addRenderComponent() {
+	renderComponent = std::make_unique<RenderComponent>();
+}
+
+// Draw object, update if necessary
+void Object::draw() {
+
+	if (renderComponent) {
+		// Update transform
+		update();
+
+		// Draw
+		renderComponent->draw();
+	}
+}
+
+// If transform is modified, recalculate and update model matrix
+void Object::update() {
+	if (transform.transformModified) {
+		// Recalculate model matrix, send back over
+		transform.calculateModelMatrix();
+		renderComponent->getShader()->setMat4("group", transform.getModelMatrix());
+	}
+}
+
+/* Instance */
+Instance2::Instance2(const std::string& _name) : 
+	name(_name), transform(Transform()) {
+
+}
+
+/* InstanceGroup */
+InstanceGroup2::InstanceGroup2(const std::string& _name) : Object(_name) {
+	//renderComponent = std::make_unique<RenderComponent>();
+	transform.transformModified = true;
+}
+
+void InstanceGroup2::addRenderComponent() {
+	renderComponent = std::make_unique<RenderComponent>();
+	renderComponent->setupMaterial();
+	setupModelBuffer();
+}
+
+void InstanceGroup2::setupModelBuffer() {
+
+	// Ensure render component exists
+	if (renderComponent == nullptr) {
+		spdlog::error("Attempted to setup model buffer for instance group {}, but no render component is set", name);
+		return;
+	}
+
+	// Create model buffer
+	glGenBuffers(1, &modelBuffer);
+	// Bind vao
+	glBindVertexArray(renderComponent->VAO);
 	// Model matrix buffer
 	glBindBuffer(GL_ARRAY_BUFFER, modelBuffer);
-	glBufferData(GL_ARRAY_BUFFER, modelBufferSize * sizeof(glm::mat4), glm::value_ptr(glm::mat4(1.0f)), GL_STATIC_DRAW); // reserve matrixBufferSize matrices of space
+	glBufferData(GL_ARRAY_BUFFER, modelBufferSize * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW); // reserve matrixBufferSize matrices of space
 
 	// setup matrix as location 3,4,5,6
 	GLsizei vec4Size = (GLsizei)sizeof(glm::vec4);
@@ -283,38 +345,114 @@ void RenderComponent::setupBuffers() {
 	glVertexAttribDivisor(4, 1);
 	glVertexAttribDivisor(5, 1);
 	glVertexAttribDivisor(6, 1);
-	*/
-	glBindVertexArray(0);
 }
 
-void RenderComponent::setupMaterial() {
-	material->use();
-}
-
-/* Object */
-Object::Object(const std::string& _name) : name(_name), transform(Transform(weak_from_this())) {
-	//renderComponent = std::make_unique<RenderComponent>(std::make_shared<Object>(this));
-};
-
-void Object::addRenderComponent() {
-	renderComponent = std::make_unique<RenderComponent>(weak_from_this());
-}
-
-void Object::draw() {
-
-	if (renderComponent) {
-		// Update transform
-		update();
-
-		// Draw
-		renderComponent->draw();
+void InstanceGroup2::draw() {
+	// Ensure render component exists
+	if (renderComponent == nullptr) {
+		spdlog::error("Attempted to draw instance group {}, but no render component is set", name);
+		return;
 	}
+	// Update transform
+	update();
+	
+	// Collect updated instances
+	updateInstances();
+
+	// Draw
+	glBindVertexArray(renderComponent->VAO);
+
+	renderComponent->getShader()->use();
+	renderComponent->getMaterial()->use();
+
+	if (instances.size() > 0) {
+		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)renderComponent->getIndices().size(), GL_UNSIGNED_INT, 0, instances.size());
+	}
+	
 }
 
-void Object::update() {
-	if (transform.transformModified) {
-		// Recalculate model matrix, send back over
-		transform.calculateModelMatrix();
-		renderComponent->getShader()->setMat4("group", transform.getModelMatrix());
+void InstanceGroup2::updateInstances() {
+	// TODO: implement a check where if amount of modified instances is bigger than some relative amount, do a batch call instead of
+	// one-by-one
+	
+	for (std::shared_ptr<Instance2> instance : instances) {
+		if (instance->transform.transformModified) {
+			// Reset flag
+			instance->transform.transformModified = false;
+
+			// Recalculate model matrix
+			instance->transform.calculateModelMatrix();
+
+			// Buffer single piece of data over
+			singleBuffer(GL_ARRAY_BUFFER, modelBuffer, instance->modelBufferIndex * sizeof(glm::mat4), instance->transform.getModelMatrix(), GL_STATIC_DRAW);
+		}
 	}
+	/*
+	std::vector<glm::mat4> matrices;
+	for (std::shared_ptr<Instance2> instance : instances) {
+		instance->transform.calculateModelMatrix();
+		matrices.push_back(instance->transform.getModelMatrix());
+	}
+	batchBuffer(GL_ARRAY_BUFFER, modelBuffer, matrices, GL_STATIC_DRAW);*/
+
+}
+
+void InstanceGroup2::addInstance(std::shared_ptr<Instance2> instance) {
+	if (instances.size() >= modelBufferSize) {
+		resizeModelBuffer();
+	}
+	instances.push_back(instance);
+	instance->modelBufferIndex = nextModelBufferIndex;
+	nextModelBufferIndex++;
+	
+	instance->relativeInstanceId = nextInstanceId;
+	nextInstanceId++;
+	
+	// Workaround that forces instance to appear on next immediate frame
+	instance->transform.transformModified = true; 
+}
+
+std::shared_ptr<Instance2> InstanceGroup2::addInstance(const std::string& name) {
+	std::shared_ptr<Instance2> instance = std::make_shared<Instance2>(name);
+	addInstance(instance);
+	return instance;
+}
+
+void InstanceGroup2::resizeModelBuffer() {
+	// Ensure render component exists
+	if (renderComponent == nullptr) {
+		spdlog::error("Attempted to resize model buffer for instance group {}, but no render component is set", name);
+		return;
+	}
+	
+	glBindVertexArray(renderComponent->VAO);
+	modelBufferSize += modelBufferIncrement;
+
+	// Generate new buffer
+	unsigned int newModelBuffer;
+	glGenBuffers(1, &newModelBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, newModelBuffer);
+	glBufferData(GL_ARRAY_BUFFER, modelBufferSize * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW); // Reserve new data space
+
+	// Copy data from the old buffer to the new buffer
+	glBindBuffer(GL_COPY_READ_BUFFER, modelBuffer);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, newModelBuffer);
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, nextModelBufferIndex * sizeof(glm::mat4));
+
+	// Update VAO with new buffer
+	glBindBuffer(GL_ARRAY_BUFFER, newModelBuffer);
+	GLsizei vec4Size = (GLsizei)sizeof(glm::vec4);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4Size));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4Size));
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
+
+	// Delete the old buffer and update the modelBuffer to the new buffer
+	glDeleteBuffers(1, &modelBuffer);
+	modelBuffer = newModelBuffer;
+
+	// Unbind the buffers
+	glBindBuffer(GL_COPY_READ_BUFFER, 0);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

@@ -11,27 +11,6 @@ std::vector<InstanceGroup*>* ObjectManager::getInstanceGroups() {
 	return &instanceGroups;
 }
 
-/*InstanceGroup* ObjectManager::addMesh(Mesh* mesh) {
-	std::vector<Texture*> textures = mesh->getTextures();
-	if (textures.size() == 0) {
-		Texture* texture = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
-		textures = { texture };
-	}
-
-	Shader* shader = mesh->getShader();
-	if (shader == nullptr) {
-		shader = new Shader("shaders/instance_shader.vert", "shaders/shader.frag");
-	}
-
-	InstanceGroup* instanceGroup = new InstanceGroup(mesh->getName(), mesh->getVertices(), mesh->getIndices(), textures, shader);
-
-	Instance* instance = new Instance("instance", mesh->getPosition(), mesh->getQuatRotation(), mesh->getScale());
-	instanceGroup->addInstance(instance);
-
-	addInstanceGroup(instanceGroup);
-	return instanceGroup;
-}*/
-
 InstanceGroup* ObjectManager::createInstantiable(
 	const std::string& _name,
 	const std::vector<Vertex>& _vertices,

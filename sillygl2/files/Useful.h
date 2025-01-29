@@ -17,15 +17,13 @@
 #include <iostream>
 #include "Log.h"
 
+
+
+void assert_log(bool condition, const std::string& message, const char* file, int line);
+
 // Only use assert log if in debug mode
 #ifndef NDEBUG
-#define ASSERT_LOG(condition, message) \
-    do { \
-        if (!(condition)) { \
-            spdlog::error(message); \
-            std::exit(EXIT_FAILURE); \
-        } \
-    } while (false)
+#define ASSERT_LOG(condition, message) assert_log(condition, message, __FILE__, __LINE__)
 #else
 #define ASSERT_LOG(condition, message) ((void)0)
 #endif
@@ -36,7 +34,8 @@ void batchBuffer(GLenum bufferType, unsigned int buffer, const std::vector<T>& d
     ASSERT_LOG(usage == GL_STATIC_DRAW || usage == GL_DYNAMIC_DRAW || usage == GL_STREAM_DRAW, "Attempted to batch buffer with invalid usage");
 
     glBindBuffer(bufferType, buffer);
-    ASSERT_LOG(glIsBuffer(buffer), "Invalid Buffer");
+	std::string invalidBuffer = "Attempted to batch invalid buffer " + std::to_string(buffer);
+    ASSERT_LOG(glIsBuffer(buffer), invalidBuffer);
 
     glBufferData(bufferType, dataList.size() * sizeof(T), dataList.data(), usage);
 
@@ -49,7 +48,11 @@ void singleBuffer(GLenum bufferType, unsigned int buffer, std::size_t start, con
 	ASSERT_LOG(usage == GL_STATIC_DRAW || usage == GL_DYNAMIC_DRAW || usage == GL_STREAM_DRAW, "Attempted to batch buffer with invalid usage");
 
     glBindBuffer(bufferType, buffer);
-    ASSERT_LOG(glIsBuffer(buffer), "Invalid Buffer");
+
+    std::string invalidBuffer = "Attempted to send over single data to invalid buffer " + std::to_string(buffer);
+
+    ASSERT_LOG(glIsBuffer(buffer), invalidBuffer);
+
 	glBufferSubData(bufferType, start, sizeof(T), &data);
 	glBindBuffer(bufferType, 0);
 }
