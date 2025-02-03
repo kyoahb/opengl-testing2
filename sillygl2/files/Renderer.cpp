@@ -73,11 +73,11 @@ void Renderer::preRenderTest() {
 		6, 7, 3
 	};
 
-	std::shared_ptr<InstanceGroup> cubes = objectManager->createCubeInstanceGroup(1.0f, 1.0f, 1.0f, glm::vec3(0.0f), "cubes");
-	for (int i = 0; i < 13; i++) {
-		std::shared_ptr<InstanceObject> ig = cubes->addInstance("coolmoment");
-		ig->setPosition(rand_vec3(-5.0f, 5.0f));
-	}
+	//std::shared_ptr<InstanceGroup> cubes = objectManager->createCubeInstanceGroup(1.0f, 1.0f, 1.0f, glm::vec3(0.0f), "cubes");
+	//for (int i = 0; i < 13; i++) {
+	//	std::shared_ptr<InstanceObject> ig = cubes->addInstance("coolmoment");
+	//	ig->setPosition(rand_vec3(-5.0f, 5.0f));
+	//}
 
 	std::shared_ptr<Object> deleteThisAfterTest = objectManager->createObject("cool");
 	deleteThisAfterTest->createRenderComponent();
@@ -85,11 +85,11 @@ void Renderer::preRenderTest() {
 	deleteThisAfterTest->getRenderComponent()->material->diffuse = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
 	deleteThisAfterTest->getRenderComponent()->setupMaterial();
 
-	std::shared_ptr<Object> blankCube = objectManager->createObject("cool NOT TEX");
-	blankCube->createRenderComponent();
-	blankCube->getRenderComponent()->addVerticesIndices(vertices, indices);
-	blankCube->getRenderComponent()->getMaterial()->diffuse = TextureManager::defaultTexture(TextureType::Diffuse);
-	blankCube->getRenderComponent()->setupMaterial();
+	//std::shared_ptr<Object> blankCube = objectManager->createObject("cool NOT TEX");
+	//blankCube->createRenderComponent();
+	//blankCube->getRenderComponent()->addVerticesIndices(vertices, indices);
+	//blankCube->getRenderComponent()->getMaterial()->diffuse = TextureManager::defaultTexture(TextureType::Diffuse);
+	//blankCube->getRenderComponent()->setupMaterial();
 
 
 }

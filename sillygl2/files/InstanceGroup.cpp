@@ -19,7 +19,7 @@ void InstanceGroup::setupModelBuffer() {
 	// Bind vao
 	glBindVertexArray(renderComponent->VAO);
 	// Model matrix buffer
-	glBindBuffer(GL_ARRAY_BUFFER, renderComponent->modelBuffer);
+	renderComponent->modelBuffer.bind();
 	glBufferData(GL_ARRAY_BUFFER, modelBufferSize * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW); // reserve matrixBufferSize matrices of space
 }
 
@@ -41,9 +41,9 @@ void InstanceGroup::draw() {
 	renderComponent->getShader()->use();
 	renderComponent->getMaterial()->use();
 
-	glBindBuffer(GL_ARRAY_BUFFER, renderComponent->VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderComponent->EBO);
-	glBindBuffer(GL_ARRAY_BUFFER, renderComponent->modelBuffer);
+	renderComponent->VBO.bind();
+	renderComponent->EBO.bind();
+	renderComponent->modelBuffer.bind();
 
 	if (instances.size() > 0) {
 		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)renderComponent->getIndices().size(), GL_UNSIGNED_INT, 0, instances.size());
@@ -90,7 +90,7 @@ void InstanceGroup::updateInstances() {
 	// one-by-one
 
 	for (std::shared_ptr<InstanceObject> instance : instances) {
-		instance->update(renderComponent->modelBuffer);
+		instance->update(renderComponent->modelBuffer.bufferId);
 	}
 	/*
 	std::vector<glm::mat4> matrices;
@@ -109,7 +109,8 @@ void InstanceGroup::batchResendModels() {
 	}
 	
 	// Resend
-	batchBuffer(GL_ARRAY_BUFFER, renderComponent->modelBuffer, matrices, GL_STATIC_DRAW);
+	//batchBuffer(GL_ARRAY_BUFFER, renderComponent->modelBuffer, matrices, GL_STATIC_DRAW);
+	renderComponent->modelBuffer.bufferData(matrices.size(), matrices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::addInstance(std::shared_ptr<InstanceObject> instance) {
@@ -149,7 +150,8 @@ void InstanceGroup::resizeModelBuffer() {
 	glBufferData(GL_ARRAY_BUFFER, modelBufferSize * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW); // Reserve new data space
 
 	// Copy data from the old buffer to the new buffer
-	glBindBuffer(GL_COPY_READ_BUFFER, renderComponent->modelBuffer);
+	//glBindBuffer(GL_COPY_READ_BUFFER, renderComponent->modelBuffer);
+	renderComponent->modelBuffer.bind();
 	glBindBuffer(GL_COPY_WRITE_BUFFER, newModelBuffer);
 	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, nextModelBufferIndex * sizeof(glm::mat4));
 
@@ -162,8 +164,8 @@ void InstanceGroup::resizeModelBuffer() {
 	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
 
 	// Delete the old buffer and update the modelBuffer to the new buffer
-	glDeleteBuffers(1, &renderComponent->modelBuffer);
-	renderComponent->modelBuffer = newModelBuffer;
+	//glDeleteBuffers(1, &renderComponent->modelBuffer);
+	renderComponent->modelBuffer.bufferId = newModelBuffer;
 
 	// Unbind the buffers
 	glBindBuffer(GL_COPY_READ_BUFFER, 0);

@@ -5,6 +5,7 @@
 #include "Material.h"
 #include "Shader_l.h"
 #include "Log.h"
+#include "Buffer.h"
 
 class RenderComponent {
 private:
@@ -13,7 +14,12 @@ private:
 	std::unique_ptr<Shader> shader;
 	bool visible = true;
 public:
-	GLuint VAO, VBO, EBO, modelBuffer;
+	//GLuint VAO, VBO, EBO, modelBuffer;
+	GLuint VAO;
+	Buffer<Vertex> VBO = Buffer<Vertex>(GL_ARRAY_BUFFER, "VBO");
+	Buffer<unsigned int> EBO = Buffer<unsigned int>(GL_ELEMENT_ARRAY_BUFFER, "EBO");
+	Buffer<glm::mat4> modelBuffer = Buffer<glm::mat4>(GL_ARRAY_BUFFER, "modelBuffer");
+
 	std::shared_ptr<Material> material;
 
 	RenderComponent(

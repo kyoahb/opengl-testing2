@@ -2,7 +2,7 @@
 #include "TransformComponent.h"
 #include "RenderComponent.h"
 #include "Camera.h"
-
+#include "Buffer.h"
 class Object {
 protected:
 	unsigned int id;

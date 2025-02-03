@@ -120,9 +120,6 @@
     <ClCompile Include="files\Renderer.cpp">
       <Filter>Rendering\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Buffer.inl">
-      <Filter>Rendering\Buffer</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="files\Camera.h">
@@ -197,7 +194,7 @@
     <ClInclude Include="files\Renderer.h">
       <Filter>Rendering\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Buffer.h">
+    <ClInclude Include="files\Buffer.h">
       <Filter>Rendering\Buffer</Filter>
     </ClInclude>
   </ItemGroup>
@@ -216,6 +213,9 @@
     </None>
     <None Include="shaders\material_shader.vert">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="files\Buffer.inl">
+      <Filter>Rendering\Buffer</Filter>
     </None>
   </ItemGroup>
 </Project>

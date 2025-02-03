@@ -135,7 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Buffer.inl" />
     <ClCompile Include="dlls\glad.c" />
     <ClCompile Include="files\Camera.cpp" />
     <ClCompile Include="files\Input.cpp" />
@@ -159,7 +158,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Buffer.h" />
+    <ClInclude Include="files\Buffer.h" />
     <ClInclude Include="files\Camera.h" />
     <ClInclude Include="files\Input.h" />
     <ClInclude Include="files\InstanceObject.h" />
@@ -186,6 +185,7 @@
     <ClInclude Include="include\stb image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="files\Buffer.inl" />
     <None Include="shaders\instance_shader.vert" />
     <None Include="shaders\material_shader.frag" />
     <None Include="shaders\material_shader.vert" />
