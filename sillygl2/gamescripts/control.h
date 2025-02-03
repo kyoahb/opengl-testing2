@@ -19,10 +19,11 @@ public:
 
 
 		camera = new Camera();
+		camera->setPosition(glm::vec3(0.0f, 0.0f, 6.0f));
 		renderer->setCamera(camera);
 
-		player = objectManager->createInstantiable("player");
-		player->attachCamera(camera);
+		player = objectManager->createObject("player");
+		player->attachCamera(std::shared_ptr<Camera>(camera));
 
 		Key* forward = new Key(GLFW_KEY_W);
 		forward->holdFunction = [this]() { this->movement("forward"); };
@@ -145,5 +146,5 @@ private:
 	double dTime = 0.0f;
 	float speed = 5.0f;
 	Camera* camera;
-	InstanceGroup* player;
+	std::shared_ptr<Object> player;
 };

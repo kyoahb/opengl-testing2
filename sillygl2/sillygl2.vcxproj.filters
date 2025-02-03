@@ -22,21 +22,45 @@
     <Filter Include="dependencies">
       <UniqueIdentifier>{1d59d0f4-4532-4ca1-9768-50274b019479}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{5802b0df-a979-4cc3-b70a-7002476d1940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{6c58b4e4-4e17-4507-86cd-4898b1408210}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\headers">
+      <UniqueIdentifier>{c6a07dc8-3610-4fd6-a304-797b2f3e35d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\src">
+      <UniqueIdentifier>{ccbe13f5-c073-4ed7-8274-35bce3021d67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Components">
+      <UniqueIdentifier>{d875834c-cf3f-4c83-859d-309e94a61991}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Components\headers">
+      <UniqueIdentifier>{67149d2f-4f1a-4f10-9e4f-733647e5b4a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Components\src">
+      <UniqueIdentifier>{467a6e12-73f8-4315-93df-069c60bec3ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\ObjectManager">
+      <UniqueIdentifier>{e06a5981-fa55-438d-afda-6d419740b058}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{4c0ffe17-7bdf-4c17-84fb-8c08cb8c0940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Renderer">
+      <UniqueIdentifier>{6aeef4de-aced-4656-a781-fd25ca4da59c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Buffer">
+      <UniqueIdentifier>{9f551d0e-05c8-4652-9c88-9e60c836f67d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="files\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="files\Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="files\Object.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="files\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="files\Script.cpp">
@@ -54,12 +78,6 @@
     <ClCompile Include="files\TextureManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="files\Instance.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="files\InstanceGroup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="files\Manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -67,9 +85,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="files\MenuManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="files\ObjectManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="files\Log.cpp">
@@ -81,8 +96,32 @@
     <ClCompile Include="dlls\glad.c">
       <Filter>dependencies</Filter>
     </ClCompile>
-    <ClCompile Include="files\GameObject.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="main.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="files\Object.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="files\TransformComponent.cpp">
+      <Filter>Objects\Components\src</Filter>
+    </ClCompile>
+    <ClCompile Include="files\RenderComponent.cpp">
+      <Filter>Objects\Components\src</Filter>
+    </ClCompile>
+    <ClCompile Include="files\InstanceObject.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="files\InstanceGroup.cpp">
+      <Filter>Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="files\ObjectManager.cpp">
+      <Filter>Objects\ObjectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="files\Renderer.cpp">
+      <Filter>Rendering\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.inl">
+      <Filter>Rendering\Buffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -90,12 +129,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="files\Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="files\Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="files\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="files\Script.h">
@@ -125,12 +158,6 @@
     <ClInclude Include="files\TextureManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="files\Instance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="files\InstanceGroup.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="files\Manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -138,9 +165,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="files\MenuManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="files\ObjectManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gamescripts\engine.h">
@@ -152,8 +176,29 @@
     <ClInclude Include="files\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="files\GameObject.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="files\Object.h">
+      <Filter>Objects\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="files\TransformComponent.h">
+      <Filter>Objects\Components\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="files\RenderComponent.h">
+      <Filter>Objects\Components\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="files\InstanceObject.h">
+      <Filter>Objects\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="files\InstanceGroup.h">
+      <Filter>Objects\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="files\ObjectManager.h">
+      <Filter>Objects\ObjectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="files\Renderer.h">
+      <Filter>Rendering\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.h">
+      <Filter>Rendering\Buffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

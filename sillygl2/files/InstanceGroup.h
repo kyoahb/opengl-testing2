@@ -1,70 +1,35 @@
 #pragma once
-#include "Instance.h"
-#include "Object.h"
+#include "InstanceObject.h"
 
-class InstanceGroup : public VertexObject {
+class InstanceGroup : public Object {
 public:
+	unsigned int id;
 
-	InstanceGroup(
-		const std::string& _name = "Unnamed InstanceGroup",
-		const std::vector<Vertex>& _vertices = {},
-		const std::vector<unsigned int>& _indices = {},
-		const Material& _material = Material(),
-		const glm::vec3& _position = glm::vec3(0.0f),
-		const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
-		const glm::vec3& _scale = glm::vec3(1.0f));
-
-
-
-	// Camera
-	Camera* getAttachedCamera();
-	void attachCamera(Camera* camera);
-	bool isCameraAttached();
-
-	// Instances
-	const std::vector<Instance*>& getInstances();
-	std::vector<Instance*> getInstancesByName(std::string name);
-	Instance* getInstanceById(unsigned int id);
-	void updateInstances();
-	void addInstance(Instance* instance);
-	void removeInstance(Instance* instance);
-
-	// Vertices
-	void setVertex(const Vertex& vertex, unsigned int index); // Replace vertex at index with new vertex
-	void removeVertex(unsigned int index); // Remove vertex at index
-	void setVertices(const std::vector<Vertex>& _vertices); // Replace vertices with new vertices
-	void addVertices(const std::vector<Vertex>& _vertices); // Add new vertices on top of existing ones
-	void addVerticesIndices(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices); // Adds vertices and indices, ensuring they are relative to each other. Indices added here cannot access existing indices.
-	// Indices
-	void setIndices(const std::vector<unsigned int>& _indices); // Replace indices with new indices
-	void addIndices(const std::vector<unsigned int>& _indices); // Add new indices on top of existing ones
-
-	// Material
-	void setMaterial(const Material& _material);
-
-	// Model buffers
-	void calcAndSendModel(); // Calculate GROUP model and send to shader
-	void batchResendModelMatrices(); // Resends individual model buffers to GPU
-	void resizeModelBuffer(); // Copies old individual model(s) buffer to new larger buffer
-
-	// GameObject overrides with flags added
-	void rotateEuler(const glm::vec3& _rotation);
-	void rotateQuat(const glm::quat& _rotation);
-	void setRotation(const glm::quat& _rotation);
-	void move(const glm::vec3& change);
-	void addScale(const glm::vec3& _scale);
+	std::vector<std::shared_ptr<InstanceObject>> instances;
+	InstanceGroup(const std::string& _name = "Unnamed InstanceGroup");
 
 	void draw();
 
+	void addInstance(std::shared_ptr<InstanceObject> instance); // Add instance to group
+	std::shared_ptr<InstanceObject> addInstance(const std::string& name); // Create instance with name and add to group
 
+	void removeInstance(std::shared_ptr<InstanceObject> instance); // Remove instance from list, meaning it is no longer rendered
+
+	std::vector<std::shared_ptr<InstanceObject>>* getInstances(); // Get all instances in group
+	std::shared_ptr<InstanceObject> getInstanceById(unsigned int id); // Get instance by Relative id
+	std::vector<std::shared_ptr<InstanceObject>> getInstancesByName(std::string name); // Get all instances with a given name
 
 private:
-	std::vector<Instance*> instances; // List of instances rendered every frame
+	void setupModelBuffer(); // Setup model buffer for instances, reserve space
 
-	unsigned int nextModelBufferIndex = 0; // Next available index in model buffer. 
-	unsigned int nextID = 0; // Next available ID for an instance in this group. Can never be reduced
-	Camera* attachedCamera = nullptr;
-	unsigned int modelBuffer;
-	unsigned int modelBufferSize = 1000; // Initial pre-gen size of model buffer
-	unsigned int modelBufferIncrement = 1000; // Amount to increase model buffer size by when it runs out of space;
+	void batchResendModels(); // Resend all model matrices from instances to model buffer
+
+	void updateInstances();
+	void resizeModelBuffer(); // Increase model buffer size by modelBufferIncrement
+	
+private:
+	unsigned int modelBufferIncrement = 1000; // How much to increase model buffer size by when necessary
+	unsigned int nextModelBufferIndex = 0; // Next free index in the model buffer
+	unsigned int modelBufferSize = 1000; // Size of model buffer (in matrices)
+	unsigned int nextInstanceId = 0; // Next free instance id
 };

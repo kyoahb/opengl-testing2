@@ -82,7 +82,7 @@ public:
     }
     // activate the shader
     // ------------------------------------------------------------------------
-    void use()
+    void use() const
     {
         glUseProgram(ID);
     }
@@ -113,9 +113,18 @@ public:
         }
     }
 
+    bool isShaderBound() const {
+		GLint currentProgram;
+		glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+		
+        return currentProgram == ID;
+    }
 
 	// Returns uniform location of a uniform in the shader
 	GLuint getLocation(const std::string& name) const {
+        if (!isShaderBound()) {
+            use();
+        }
 		GLuint location = glGetUniformLocation(ID, name.c_str());
 
         // Uniform does not exist error
@@ -124,29 +133,35 @@ public:
         return location;
 	}
 
-    // utility uniform functions
+    // utility uniform functions.
+    // All require shader to be bound.
     // ------------------------------------------------------------------------
     void setBool(const std::string& name, bool value) const
     {
-        glUniform1i(getLocation(name.c_str()), (int)value);
+		GLuint location = getLocation(name.c_str());
+        glUniform1i(location, (int)value);
     }
     // ------------------------------------------------------------------------
     void setInt(const std::string& name, int value) const
     {
-        glUniform1i(getLocation(name.c_str()), value);
+        GLuint location = getLocation(name.c_str());
+        glUniform1i(location, value);
     }
     // ------------------------------------------------------------------------
     void setFloat(const std::string& name, float value) const
     {
-        glUniform1f(getLocation(name.c_str()), value);
+        GLuint location = getLocation(name.c_str());
+        glUniform1f(location, value);
     }
 	void setVec3(const std::string& name, glm::vec3 value) const
 	{
-		glUniform3fv(getLocation(name.c_str()), 1, glm::value_ptr(value));
+        GLuint location = getLocation(name.c_str());
+		glUniform3fv(location, 1, glm::value_ptr(value));
 	}
     void setMat4(const std::string& name, glm::mat4 value) const
     {
-        glUniformMatrix4fv(getLocation(name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+        GLuint location = getLocation(name.c_str());
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
     }
 private:
     // utility function for checking shader compilation/linking errors.

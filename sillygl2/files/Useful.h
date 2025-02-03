@@ -28,6 +28,7 @@ void assert_log(bool condition, const std::string& message, const char* file, in
 #define ASSERT_LOG(condition, message) ((void)0)
 #endif
 
+// Buffer a vector of data into a given buffer of a given type. EXPECTS VAO to be bound already.
 template <typename T>
 void batchBuffer(GLenum bufferType, unsigned int buffer, const std::vector<T>& dataList, GLenum usage) {
     ASSERT_LOG(bufferType == GL_ARRAY_BUFFER || bufferType == GL_ELEMENT_ARRAY_BUFFER, "Attempted to batch invalid buffer type");
@@ -36,12 +37,30 @@ void batchBuffer(GLenum bufferType, unsigned int buffer, const std::vector<T>& d
     glBindBuffer(bufferType, buffer);
 	std::string invalidBuffer = "Attempted to batch invalid buffer " + std::to_string(buffer);
     ASSERT_LOG(glIsBuffer(buffer), invalidBuffer);
-
-    glBufferData(bufferType, dataList.size() * sizeof(T), dataList.data(), usage);
-
-    glBindVertexArray(0);
+    if (dataList.size() == 0) {
+        glBufferData(bufferType, 0, nullptr, usage);
+	}
+	else {
+		glBufferData(bufferType, dataList.size() * sizeof(T), dataList.data(), usage);
+	}
+    
+    glBindBuffer(bufferType, 0);
 }
 
+// Reserve space in a buffer of a given type with a given usage. EXPECTS VAO to be bound already.
+template <typename T>
+void reserveBuffer(GLenum bufferType, unsigned int buffer, std::size_t size, GLenum usage) {
+	ASSERT_LOG(bufferType == GL_ARRAY_BUFFER || bufferType == GL_ELEMENT_ARRAY_BUFFER, "Attempted to reserve invalid buffer type");
+	ASSERT_LOG(usage == GL_STATIC_DRAW || usage == GL_DYNAMIC_DRAW || usage == GL_STREAM_DRAW, "Attempted to reserve buffer with invalid usage");
+
+	glBindBuffer(bufferType, buffer);
+	std::string invalidBuffer = "Attempted to reserve invalid buffer " + std::to_string(buffer);
+	ASSERT_LOG(glIsBuffer(buffer), invalidBuffer);
+	glBufferData(bufferType, size, nullptr, usage);
+	glBindBuffer(bufferType, 0);
+}
+
+// Buffer over a single piece of data into a given buffer at a given offset. EXPECTS VAO to be bound already.
 template <typename T>
 void singleBuffer(GLenum bufferType, unsigned int buffer, std::size_t start, const T& data, GLenum usage) {
 	ASSERT_LOG(bufferType == GL_ARRAY_BUFFER || bufferType == GL_ELEMENT_ARRAY_BUFFER, "Attempted to batch invalid buffer type");

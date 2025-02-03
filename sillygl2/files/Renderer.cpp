@@ -41,33 +41,57 @@ void Renderer::setCamera(Camera* camera) {
 
 void Renderer::preRenderTest() {
 
-	InstanceGroup* cubes = objectManager->createCubeInstanceGroup(1.0f, 1.0f, 1.0f, glm::vec3(0.0f), "cubes");
-	for (int i = 0; i < 10; i++) {
-		//objectManager->addCube(cubes, rand_vec3(-5.0f, 5.0f), glm::vec3(0.0f), rand_vec3(0.1f, 5.0f), "cube");
+	float width = 1.0f;
+	float height = 1.0f;
+	float depth = 1.0f;
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+
+	vertices = {
+		Vertex(glm::vec3(-width / 2, -height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)),
+		Vertex(glm::vec3(width / 2, -height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)),
+		Vertex(glm::vec3(width / 2, height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)),
+		Vertex(glm::vec3(-width / 2, height / 2, -depth / 2), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)),
+		Vertex(glm::vec3(-width / 2, -height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 0.0f)),
+		Vertex(glm::vec3(width / 2, -height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 0.0f)),
+		Vertex(glm::vec3(width / 2, height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)),
+		Vertex(glm::vec3(-width / 2, height / 2, depth / 2), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)),
+	};
+
+	indices = {
+		0, 1, 2,
+		2, 3, 0,
+		1, 5, 6,
+		6, 2, 1,
+		7, 6, 5,
+		5, 4, 7,
+		4, 0, 3,
+		3, 7, 4,
+		4, 5, 1,
+		1, 0, 4,
+		3, 2, 6,
+		6, 7, 3
+	};
+
+	std::shared_ptr<InstanceGroup> cubes = objectManager->createCubeInstanceGroup(1.0f, 1.0f, 1.0f, glm::vec3(0.0f), "cubes");
+	for (int i = 0; i < 13; i++) {
+		std::shared_ptr<InstanceObject> ig = cubes->addInstance("coolmoment");
+		ig->setPosition(rand_vec3(-5.0f, 5.0f));
 	}
 
-	/*deleteThisAfterTest = new Object("cool");
-	deleteThisAfterTest->addRenderComponent();
-	deleteThisAfterTest->renderComponent->addVerticesIndices(cubes->getVertices(), cubes->getIndices());
+	std::shared_ptr<Object> deleteThisAfterTest = objectManager->createObject("cool");
+	deleteThisAfterTest->createRenderComponent();
+	deleteThisAfterTest->getRenderComponent()->addVerticesIndices(vertices, indices);
+	deleteThisAfterTest->getRenderComponent()->material->diffuse = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
+	deleteThisAfterTest->getRenderComponent()->setupMaterial();
 
-	deleteThisAfterTest->renderComponent->setMaterial(std::shared_ptr<Material>(mat));
-	deleteThisAfterTest->draw();*/
+	std::shared_ptr<Object> blankCube = objectManager->createObject("cool NOT TEX");
+	blankCube->createRenderComponent();
+	blankCube->getRenderComponent()->addVerticesIndices(vertices, indices);
+	blankCube->getRenderComponent()->getMaterial()->diffuse = TextureManager::defaultTexture(TextureType::Diffuse);
+	blankCube->getRenderComponent()->setupMaterial();
 
-	Material* mat = new Material();
-	mat->diffuse = TextureManager::createTexture(TextureType::Diffuse, "textures/hlbox.jpg");
 
-	deleteThisAfterTestGroup = new InstanceGroup2("cool2");
-	deleteThisAfterTestGroup->addRenderComponent();
-	deleteThisAfterTestGroup->renderComponent->addVerticesIndices(cubes->getVertices(), cubes->getIndices());
-	deleteThisAfterTestGroup->renderComponent->setMaterial(std::shared_ptr<Material>(mat));
-	
-	for (int i = 0; i < 10; i++) {
-		std::shared_ptr<Instance2> ig = deleteThisAfterTestGroup->addInstance("coolmoment");
-		ig->transform.setPosition(rand_vec3(-5.0f, 5.0f));
-	}
-	deleteThisAfterTestGroup->draw();
-	deleteThisAfterTestGroup->renderComponent->getShader()->printActiveAttributes();
-	deleteThisAfterTestGroup->renderComponent->getShader()->printActiveUniforms();
 }
 
 void Renderer::renderTest(float deltaTime) {
@@ -80,20 +104,7 @@ void Renderer::renderTest(float deltaTime) {
 	// View buffer
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(*view));
 
-	//for (auto& mesh : *(meshManager->getMeshes())) {
-	//	mesh->drawSingleTexture();
-	//}
-	std::vector<InstanceGroup*> groups = *(objectManager->getInstanceGroups());
-	for (InstanceGroup* group : groups) {
-		group->draw();
-	}
-	//deleteThisAfterTest->draw();
-	deleteThisAfterTestGroup->draw();
-	//groups[0]->getInstances()[0]->rotateQuat(rotation);
-	
-	//for (Instance* cube : groups[0]->instances) {
-	//	cube->rotateQuat(rotation);
-	//}
-	//groups[0]->rotateEuler(deltaTime * glm::vec3(360.0f, 0.0f, 0.0f));
-	//groups[0]->rotateEuler(glm::vec3(0.1f, 0.0f, 0.0f));
+	objectManager->draw();
+
+
 }

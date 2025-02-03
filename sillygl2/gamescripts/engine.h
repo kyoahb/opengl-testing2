@@ -3,13 +3,20 @@
 #include "Script.h"
 #include <iostream>
 
-
+/*
 template<typename T>
 concept GameObjectType = std::is_base_of<GameObject, T>::value || std::is_same<Camera, T>::value;
 
 template<typename T>
 concept VertexObjectType = std::is_base_of<VertexObject, T>::value;
+*/
 
+template<typename T>
+concept ObjectType = std::is_base_of<Object, T>::value;
+
+
+template<typename T>
+concept InstanceGroupType = std::is_base_of<InstanceGroup, T>::value;
 
 class EngineScript : public Script {
 public:
@@ -134,30 +141,181 @@ public:
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
 				ImGui::SetTooltip("Calculated by taking a counter of frames until one second has passed.");
 
-			if (ImGui::CollapsingHeader("See Objects")) {
-				if (ImGui::TreeNode("Instances")) {
-					std::vector<InstanceGroup*>* instanceGroups_ptr = objectManager->getInstanceGroups();
-					for (InstanceGroup* instanceGroup : *instanceGroups_ptr) {
-						std::string name = instanceGroup->getName() + "##xx";
-
-						if (ImGui::TreeNode((name).c_str())) {
-							instanceGroupTree(instanceGroup, relativePositioning, rotationsAreQuat);
-							ImGui::TreePop();
-						}
+			if (ImGui::CollapsingHeader("Object Types List")) {
+				if (ImGui::TreeNode("Instance Groups")) {
+					for (auto& instanceGroup : *(objectManager->getInstanceGroups())) {
+						InstanceGroupTree(instanceGroup);
 					}
 					ImGui::TreePop();
 				}
-
+				if (ImGui::TreeNode("Objects")) {
+					for (auto& object : *(objectManager->getObjects())) {
+						ObjectTree(object);
+					}
+					ImGui::TreePop();
+				}
 			}
-
 			ImGui::End();
 			}, "Debug");
 		menuManager->addMenu(debugMenu);
 	}
 
-	template <GameObjectType T>
-	void PositionInputV3(T* object, const glm::vec3& absoluteOffset = glm::vec3(0.0f)) {
-		ImGui::PushID("##xx");
+	template <ObjectType T>
+	void ChildrenComponent(std::shared_ptr<T> object) {
+		if (object->getChildren().size() > 0) {
+			if (ImGui::CollapsingHeader("Children")) {
+				for (auto& child : object->getChildren()) {
+					ObjectTree(child);
+				}
+			}
+		}
+	}
+
+	void InstancesComponent(std::shared_ptr<InstanceGroup> object) {
+		if (object->getInstances()->size() > 0) {
+			if (ImGui::CollapsingHeader("Instances")) {
+				for (auto& child : *(object->getInstances())) {
+					ObjectTree(child);
+				}
+			}
+		}
+	}
+
+	template <ObjectType T>
+	void RenderableComponent(std::shared_ptr<T> object) {
+		RenderComponent* renderComp = object->getRenderComponent();
+		if (renderComp == nullptr) {
+			return;
+		}
+
+
+		if (ImGui::CollapsingHeader("Vertices")) {
+			const std::vector<Vertex>& vertices = renderComp->getVertices();
+			const std::vector<unsigned int>& indices = renderComp->getIndices();
+			std::string indicesString = "Indices: ";
+			for (int i = 0; i < indices.size(); i++) {
+				indicesString += std::to_string(indices[i]) + " ";
+			}
+			ImGui::Text(indicesString.c_str());
+			if (ImGui::Button("Add Vertex")) {
+				renderComp->addVerticesIndices({ Vertex(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f, 0.0f)) }, { 0 });
+			}
+
+			glm::vec3 objectPosition = object->getPosition();
+			// Display vertices
+			for (int i = 0; i < vertices.size(); i++) {
+				const Vertex& vertex = vertices[i]; // Reference to existing vertex position, will be updated in code
+				std::string vertexName = "Vertex " + std::to_string(i);
+				if (ImGui::TreeNode(vertexName.c_str())) {
+					VertexInputV3(i, vertex, object, relativePositioning);
+					ImGui::TreePop();
+				}
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Material")) {
+			std::string materialName = "Material: " + renderComp->getMaterial()->name;
+			ImGui::Text(materialName.c_str());
+
+			if (ImGui::TreeNode("Textures")) {
+				Texture* diffuse = renderComp->getMaterial()->diffuse;
+				if (diffuse != nullptr) {
+					ImGui::Text("Diffuse Texture ID: %d", diffuse->id);
+					ImGui::Text("Diffuse Texture Path: %s", diffuse->path.c_str());
+					ImGui::Image(diffuse->id, ImVec2(100, 100));
+				}
+
+				Texture* specular = renderComp->getMaterial()->specular;
+				if (specular != nullptr) {
+					ImGui::Text("Specular Texture ID: %d", specular->id);
+					ImGui::Text("Specular Texture Path: %s", specular->path.c_str());
+					ImGui::Image(specular->id, ImVec2(100, 100));
+				}
+
+				Texture* normal = renderComp->getMaterial()->normal;
+				if (normal != nullptr) {
+					ImGui::Text("Normal Texture ID: %d", normal->id);
+					ImGui::Text("Normal Texture Path: %s", normal->path.c_str());
+					ImGui::Image(normal->id, ImVec2(100, 100));
+				}
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNode("Shader")) {
+				ImGui::Text("Shader ID: %d", renderComp->getShader()->ID);
+				ImGui::Text("Vertex Shader Path: %s", renderComp->getShader()->vertPath.c_str());
+				ImGui::Text("Fragment Shader Path: %s", renderComp->getShader()->fragPath.c_str());
+				ImGui::TreePop();
+			}
+		}
+	}
+
+	template <ObjectType T>
+	void ObjectTree(std::shared_ptr<T> object) {
+		std::string name = object->getName();
+		std::string id = std::to_string(object->getId());
+		std::string nameID = id + name;
+		ImGui::PushID(id.c_str());
+		if (ImGui::TreeNode(nameID.c_str())) {
+			if (ImGui::CollapsingHeader("Position")) {
+				PositionVec3(object); // No offset
+			}
+			if (ImGui::CollapsingHeader("Rotation")) {
+				if (rotationsAreQuat) {
+					QuatRotationVec3(object); // No offset
+				}
+				else {
+					EulerRotationVec3(object); // No offset
+				}
+			}
+			if (ImGui::CollapsingHeader("Scale")) {
+				ScaleDragV3(object); // No offset
+			}
+
+			if (object->hasRenderComponent()) {
+				RenderableComponent(object);
+			}
+
+			ChildrenComponent(object);
+			
+
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	void InstanceGroupTree(std::shared_ptr<InstanceGroup> object) {
+		std::string name = object->getName();
+		std::string id = std::to_string(object->getId());
+		std::string nameID = id + name;
+		ImGui::PushID(id.c_str());
+		if (ImGui::TreeNode(nameID.c_str())) {
+			if (ImGui::CollapsingHeader("Position")) {
+				PositionVec3(object); // No offset
+			}
+			if (ImGui::CollapsingHeader("Rotation")) {
+				if (rotationsAreQuat) {
+					QuatRotationVec3(object); // No offset
+				}
+				else {
+					EulerRotationVec3(object); // No offset
+				}
+			}
+			if (ImGui::CollapsingHeader("Scale")) {
+				ScaleDragV3(object); // No offset
+			}
+			if (object->hasRenderComponent()) {
+				RenderableComponent(object);
+			}
+
+			InstancesComponent(object);
+
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	template <ObjectType T>
+	void PositionVec3(std::shared_ptr<T> object, const glm::vec3& absoluteOffset = glm::vec3(0.0f)) {
 		ImGui::PushItemWidth(100); // Input fields have a max width 
 		glm::vec3 tempPosition = object->getPosition() + absoluteOffset; // Copy of position
 		float smallStep = 1.0f;
@@ -169,12 +327,10 @@ public:
 
 		}
 		ImGui::PopItemWidth();
-		ImGui::PopID();
 	}
 
-	template <GameObjectType T>
-	void RotationDragV3(T* object, const glm::vec3& offset = glm::vec3(0.0f)) {
-		ImGui::PushID("##xx");
+	template <ObjectType T>
+	void EulerRotationVec3(std::shared_ptr<T> object, const glm::vec3& offset = glm::vec3(0.0f)) {
 		ImGui::PushItemWidth(100);
 
 		glm::vec3 eulerRotation = object->getEulerRotation() + offset; // Get Euler angles (degrees)
@@ -191,17 +347,12 @@ public:
 
 			// Convert to quaternion and apply incremental rotation
 			glm::quat deltaQuat = glm::quat(deltaRotation);
-			object->setRotation(deltaQuat * object->getQuatRotation());
+			object->setQuatRotation(deltaQuat * object->getQuatRotation());
 		}
-
-
-		ImGui::PopItemWidth();
-		ImGui::PopID();
 	}
 
-	template <GameObjectType T>
-	void QuatRotationDragV3(T* object, const glm::quat& offset = glm::quat(1.0f, 0.0f, 0.0f, 0.0f)) {
-		ImGui::PushID("##xx");
+	template <ObjectType T>
+	void QuatRotationVec3(std::shared_ptr<T> object, const glm::quat& offset = glm::quat(1.0f, 0.0f, 0.0f, 0.0f)) {
 		ImGui::PushItemWidth(100);
 
 		glm::quat previousRotation = object->getQuatRotation() * offset;
@@ -212,15 +363,28 @@ public:
 		modified |= ImGui::DragFloat("W##xx", &previousRotation.w, 0.1f, -1.0f, 1.0f, "%.1f");
 
 		if (modified) {
-			object->setRotation(glm::inverse(offset) * previousRotation);
+			object->setQuatRotation(glm::inverse(offset) * previousRotation);
 		}
 
 		ImGui::PopItemWidth();
-		ImGui::PopID();
 	}
 
-	template <GameObjectType T>
-	void ScaleDragV3(T* object, const glm::vec3& offset = glm::vec3(1.0f)) {
+	void CameraRotation(std::shared_ptr<Camera> object) {
+		ImGui::PushItemWidth(100);
+		glm::vec3 eulerRotation = object->getEulerRotation(); // Get Euler angles (degrees)
+
+		bool modified = false;
+		modified |= ImGui::DragFloat("Pitch##xx", &eulerRotation.x, 0.1f, -180.0f, 180.0f, "%.1f");
+		modified |= ImGui::DragFloat("Yaw##xx", &eulerRotation.y, 0.1f, -180.0f, 180.0f, "%.1f");
+		modified |= ImGui::DragFloat("Roll##xx", &eulerRotation.z, 0.1f, -180.0f, 180.0f, "%.1f");
+
+		if (modified) {
+			object->setRotation(eulerRotation);
+		}
+	}
+
+	template <ObjectType T>
+	void ScaleDragV3(std::shared_ptr<T> object, const glm::vec3& offset = glm::vec3(1.0f)) {
 		ImGui::PushID("##xx");
 		ImGui::PushItemWidth(100); // Input fields have a max width 
 		glm::vec3 tempScale = offset * object->getScale(); // Copy of scale
@@ -232,18 +396,20 @@ public:
 		ImGui::PopID();
 	}
 
-	template <VertexObjectType T>
-	void VertexInputV3(unsigned int index, const Vertex& vertex, T* object, bool relative) {
+	template <ObjectType T>
+	void VertexInputV3(unsigned int vertexIndex, const Vertex& vertex, std::shared_ptr<T> object, bool relative) {
+		RenderComponent* renderComp = object->getRenderComponent();
+		
 		ImGui::PushItemWidth(50); // Input fields have a max width 
 		float speed = 0.01f; // Speed of input change
 		float min = 0.0f; // No minimum
 		float max = 0.0f; // No maximum
 
 		Vertex tempVertex = vertex; // Copy of pre-change vertex
-		if(relative){
+		if (relative) {
 			tempVertex.position += object->getPosition();
 		}
-		ImGui::PushID(index);
+		ImGui::PushID(vertexIndex);
 
 		if (ImGui::TreeNode("Position")) {
 			bool posChanged = false; // Flag tracks change of position inputs
@@ -260,17 +426,17 @@ public:
 
 			if (posChanged && relative) {
 				posChanged = false; // Reset flag
-				object->setVertex(Vertex(tempVertex.position - object->getPosition(), tempVertex.normal, tempVertex.texCoords), index);
+				renderComp->setVertex(Vertex(tempVertex.position - object->getPosition(), tempVertex.normal, tempVertex.texCoords), vertexIndex);
 				// some update 
 			}
 			else if (posChanged) {
 				posChanged = false; // Reset flag
-				object->setVertex(tempVertex, index);
+				renderComp->setVertex(tempVertex, vertexIndex);
 				// some update 
 			}
 			ImGui::TreePop();
 		}
-		if(ImGui::TreeNode("Normal")) {
+		if (ImGui::TreeNode("Normal")) {
 			bool normalChanged = false; // Flag tracks change of normal inputs
 			// Input for x
 			normalChanged |= ImGui::DragFloat("x", &tempVertex.normal.x, speed, min, max, "%.2f");
@@ -285,12 +451,12 @@ public:
 
 			if (normalChanged) {
 				normalChanged = false; // Reset flag
-				object->setVertex(Vertex(tempVertex.position, tempVertex.normal, tempVertex.texCoords), index);
+				renderComp->setVertex(Vertex(tempVertex.position, tempVertex.normal, tempVertex.texCoords), vertexIndex);
 				// some update 
 			}
 			ImGui::TreePop();
 		}
-		if(ImGui::TreeNode("TexCoords")) {
+		if (ImGui::TreeNode("TexCoords")) {
 			bool texChanged = false; // Flag tracks change of texCoords inputs
 			// Input for x
 			texChanged |= ImGui::DragFloat("x", &tempVertex.texCoords.x, speed, min, max, "%.2f");
@@ -301,163 +467,13 @@ public:
 
 			if (texChanged) {
 				texChanged = false; // Reset flag
-				object->setVertex(Vertex(tempVertex.position, tempVertex.normal, tempVertex.texCoords), index);
+				renderComp->setVertex(Vertex(tempVertex.position, tempVertex.normal, tempVertex.texCoords), vertexIndex);
 				// some update 
 			}
 			ImGui::TreePop();
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
-	}
-
-	void instanceGroupTree(InstanceGroup* instanceGroup, bool relativePositioning, bool rotationsAreQuat) {
-		std::vector<Instance*> instances = instanceGroup->getInstances();
-
-		//Shader* shader = instanceGroup->getMaterial().shader;
-		// Instance Group characteristics
-		if (ImGui::CollapsingHeader("Position")) {
-
-			PositionInputV3(instanceGroup);
-		}
-		if (ImGui::CollapsingHeader("Rotation")) {
-			if (rotationsAreQuat) {
-				QuatRotationDragV3(instanceGroup);
-			}
-			else {
-				RotationDragV3(instanceGroup);
-			}
-		}
-		if (ImGui::CollapsingHeader("Scale")) {
-			ScaleDragV3(instanceGroup);
-		}
-		if (ImGui::CollapsingHeader("Material")) {
-			std::string materialName = "Material: " + instanceGroup->getMaterial().name;
-			ImGui::Text(materialName.c_str());
-			
-			if (ImGui::TreeNode("Textures")) {
-				Texture* diffuse = instanceGroup->getMaterial().diffuse;
-				if (diffuse != nullptr) {
-					ImGui::Text("Diffuse Texture ID: %d", diffuse->id);
-					ImGui::Text("Diffuse Texture Path: %s", diffuse->path.c_str());
-					ImGui::Image(diffuse->id, ImVec2(100, 100));
-				}
-
-				Texture* specular = instanceGroup->getMaterial().specular;
-				if (specular != nullptr) {
-					ImGui::Text("Specular Texture ID: %d", specular->id);
-					ImGui::Text("Specular Texture Path: %s", specular->path.c_str());
-					ImGui::Image(specular->id, ImVec2(100, 100));
-				}
-
-				Texture* normal = instanceGroup->getMaterial().normal;
-				if (normal != nullptr) {
-					ImGui::Text("Normal Texture ID: %d", normal->id);
-					ImGui::Text("Normal Texture Path: %s", normal->path.c_str());
-					ImGui::Image(normal->id, ImVec2(100, 100));
-				}
-				ImGui::TreePop();
-			}
-			if (ImGui::TreeNode("Shader")) {
-				//ImGui::Text("Shader ID: %d", shader->ID);
-				//ImGui::Text("Vertex Shader Path: %s", shader->vertPath.c_str());
-				//ImGui::Text("Fragment Shader Path: %s", shader->fragPath.c_str());
-				ImGui::TreePop();
-			}
-		}
-		if (instanceGroup->getVertices().size() > 0) {
-			if (ImGui::CollapsingHeader("Vertices")) {
-				const std::vector<Vertex>& vertices = instanceGroup->getVertices();
-				const std::vector<unsigned int>& indices = instanceGroup->getIndices();
-				std::string indicesString = "Indices: ";
-				for (int i = 0; i < indices.size(); i++) {
-					indicesString += std::to_string(indices[i]) + " ";
-				}
-				ImGui::Text(indicesString.c_str());
-				if (ImGui::Button("Add Vertex")) {
-					instanceGroup->addVerticesIndices({ Vertex(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f, 0.0f)) }, {0});
-				}
-
-				glm::vec3 objectPosition = instanceGroup->getPosition();
-				// Display vertices
-				for (int i = 0; i < vertices.size(); i++) {
-					const Vertex& vertex = vertices[i]; // Reference to existing vertex position, will be updated in code
-					std::string vertexName = "Vertex " + std::to_string(i);
-					if (ImGui::TreeNode(vertexName.c_str())) {
-						VertexInputV3(i, vertex, instanceGroup, relativePositioning);
-						
-						std::string deleteButtonName = "Delete##delbutton" + std::to_string(i);
-						if (ImGui::Button(deleteButtonName.c_str())) {
-							instanceGroup->removeVertex(i);
-						}
-						ImGui::TreePop();
-					}
-				}
-			}
-		}
-		if (instanceGroup->isCameraAttached()) {
-			if (ImGui::TreeNode("Camera")) {
-				Camera* camera = instanceGroup->getAttachedCamera();
-				if (ImGui::CollapsingHeader("Position")) {
-					PositionInputV3(camera);
-				}
-				if (ImGui::CollapsingHeader("Rotation")) {
-					if (rotationsAreQuat) {
-						QuatRotationDragV3(camera);
-					}
-					else {
-						RotationDragV3(camera);
-					}
-				}
-				ImGui::TreePop();
-			}
-
-		}
-		if (instances.size() > 0) {
-			if (ImGui::CollapsingHeader("Instances")) {
-				glm::vec3 posOffset = glm::vec3(0.0f);
-				glm::vec3 rotEOffset = glm::vec3(0.0f);
-				glm::quat rotQOffset = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-				glm::vec3 scaleOffset = glm::vec3(1.0f);
-				if (!relativePositioning) {
-					posOffset = instanceGroup->getPosition();
-					rotEOffset = instanceGroup->getEulerRotation();
-					rotQOffset = instanceGroup->getQuatRotation();
-					scaleOffset = instanceGroup->getScale();
-					
-				}
-				for (int i = 0; i < instances.size(); i++) {
-					Instance* instance = instances.at(i);
-					std::string name = instance->getName();
-					std::string id = std::to_string(instance->instanceID);
-					std::string nameWithID = id + name;
-
-					if (ImGui::TreeNode(nameWithID.c_str())) {
-						ImGui::Text("Name: %s", name.c_str());
-						ImGui::Text("ID: %s", id.c_str());
-						if (ImGui::Button("Delete")) {
-							instanceGroup->removeInstance(instance);
-						}
-						if (ImGui::CollapsingHeader("Position")) {
-							PositionInputV3(instance, posOffset);
-						}
-						if (ImGui::CollapsingHeader("Rotation")) {
-							if (rotationsAreQuat) {
-								QuatRotationDragV3(instance, rotQOffset);
-							}
-							else {
-								RotationDragV3(instance, rotEOffset);
-							}
-						}
-						if (ImGui::CollapsingHeader("Scale")) {
-							ScaleDragV3(instance, scaleOffset);
-						}
-						ImGui::TreePop();
-					}
-				}
-			}
-			
-		}
-
 	}
 
 	void onUpdate(double deltaTime) override {

@@ -1,83 +1,60 @@
-
 #pragma once
-#define GLM_FORCE_SSE2         // Enable SSE2
-#define GLM_FORCE_SSE3         // Enable SSE3
-#define GLM_FORCE_SSSE3        // Enable SSSE3
-#define GLM_FORCE_SSE4_1       // Enable SSE4.1
-#define GLM_FORCE_SSE4_2       // Enable SSE4.2
-#define GLM_FORCE_AVX          // Enable AVX
-#define GLM_FORCE_AVX2         // Enable AVX2
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES  // Align types to 16 bytes
-#define GLM_ENABLE_EXPERIMENTAL
-#include <vector>
-#include <string>
-#include "Useful.h"
-#include <glm/gtx/quaternion.hpp>
-#include "Vertex.h"
-#include "Shader_l.h"
-#include "Material.h"
+#include "TransformComponent.h"
+#include "RenderComponent.h"
+#include "Camera.h"
 
-class GameObject {
+class Object {
 protected:
-    // Handles
-    int id;
-    std::string name;
-    // Positioning
-    glm::vec3 position;
-    glm::quat rotation;
-    glm::vec3 scale;
+	unsigned int id;
+	std::string name;
+	std::unique_ptr<RenderComponent> renderComponent; // Default: nullptr
+	std::shared_ptr<Camera> camera; // Default: nullptr
+	TransformComponent transform;
 
+	std::vector<std::shared_ptr<Object>> children;
+
+	void update(); // Resends group matrix if transform has been updated
 public:
+	Object(const std::string& _name = "Unnamed Object");
 
-    GameObject(
-        const std::string& _name = "Unnamed Object",
-        const glm::vec3& _position = glm::vec3(0.0f), 
-        const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)), 
-        const glm::vec3& _scale = glm::vec3(1.0f));
-    virtual ~GameObject() = default;
+	// getters
+	const std::string& getName() const;
+	unsigned int getId() const;
+	std::shared_ptr<Camera> getCamera();
+	RenderComponent* getRenderComponent(); // dangerous
+	// setters
+	void setName(const std::string& _name);
+	void setId(unsigned int _id);
 
-    const std::string& getName() const;
-    const glm::vec3& getPosition() const;
-    const glm::quat& getQuatRotation() const;
-    const glm::vec3& getEulerRotation() const;
-    const glm::vec3& getScale() const;
-    int getId() const;
-	void setId(int _id);
+	// methods
+	void addChild(std::shared_ptr<Object> child);
+	void attachCamera(std::shared_ptr<Camera> camera);
+	void attachRenderComponent(std::unique_ptr<RenderComponent> _renderComponent);
+	void createRenderComponent();
 
+	bool hasRenderComponent() const;
+	bool hasCamera() const;
 
-    void move(const glm::vec3& change);
-    void rotateEuler(const glm::vec3& _rotation);
-    void rotateQuat(const glm::quat& _rotation);
-	void setRotation(const glm::quat& _rotation);
-    void addScale(const glm::vec3& _scale);
-    glm::mat4 calculateModelMatrix() const;
+	void draw(); // Update object if necessary, then draw if render component exists.
 
-private:
+	// transform overrides (necessary to propagate effects to children)
+	// getters
+	const glm::vec3& getPosition() const;
+	const glm::quat& getQuatRotation() const;
+	const glm::vec3& getEulerRotation() const;
+	const glm::vec3& getScale() const;
+	const glm::mat4& getModelMatrix() const;
+	std::vector<std::shared_ptr<Object>>& getChildren();
 
-};
+	// setters
+	void setPosition(const glm::vec3& _position);
+	void setQuatRotation(const glm::quat& _rotation);
+	void setEulerRotation(const glm::vec3& _rotation);
+	void setScale(const glm::vec3& _scale);
 
-
-class VertexObject : public GameObject {
-protected:
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
-	Material material;
-    unsigned int VAO, EBO, VBO;
-
-public:
-    VertexObject(
-        const std::string& _name = "Unnamed VertexObject",
-        const std::vector<Vertex>& _vertices = {},
-        const std::vector<unsigned int>& _indices = {},
-        const Material& _material = Material(),
-        const glm::vec3& _position = glm::vec3(0.0f),
-        const glm::quat& _rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)),
-        const glm::vec3& _scale = glm::vec3(1.0f));
-    virtual ~VertexObject() = default;
-
-    const std::vector<Vertex>& getVertices() const;
-	void setVertex(const Vertex& vertex, unsigned int index);
-    const std::vector<unsigned int>& getIndices() const;
-    const Material& getMaterial() const;
-
+	// relative transformations
+	void move(const glm::vec3& change);
+	void rotateEuler(const glm::vec3& _rotation);
+	void rotateQuat(const glm::quat& _rotation);
+	void addScale(const glm::vec3& _scale);
 };

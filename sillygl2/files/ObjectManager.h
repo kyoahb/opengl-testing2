@@ -1,31 +1,31 @@
 #pragma once
+#include "Object.h"
 #include "InstanceGroup.h"
-#include "TextureManager.h"
-#include <vector>
-#include <string>
-#include <algorithm>
 
 class ObjectManager {
 public:
-	std::vector<InstanceGroup*> instanceGroups;
+
+	std::vector<std::shared_ptr<Object>> gameObjects;
+	std::vector<std::shared_ptr<InstanceGroup>> instanceGroups;
+
 	ObjectManager();
 
-	//InstanceGroup* addMesh(Mesh* mesh); // Converts mesh to instance group and adds it to list of instance groups rendered every frame
-	InstanceGroup* createInstantiable(
-		const std::string& name = "Unnamed Instantiable",
-		const std::vector<Vertex>& _vertices = {},
-		const std::vector<unsigned int>& _indices = {},
-		const Material& _material = Material(),
-		const glm::vec3& _position = glm::vec3(0.0f),
-		const glm::quat& _rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
-		const glm::vec3& _scale = glm::vec3(1.0f)); // Creates an instance group with a single instance.
-	void addInstanceGroup(InstanceGroup* instanceGroup); // Adds instance group to list of instance groups rendered every frame
+	void addInstanceGroup(std::shared_ptr<InstanceGroup> instanceGroup);
+	std::vector<std::shared_ptr<InstanceGroup>>* getInstanceGroups();
 
-	InstanceGroup* createCubeInstanceGroup(float width, float height, float depth, glm::vec3 centre, std::string name);
+	void addObject(std::shared_ptr<Object> object);
+	std::shared_ptr<Object> createObject(const std::string& name = "Unnamed Object");
+	std::vector<std::shared_ptr<Object>>* getObjects();
 
-	std::vector<InstanceGroup*>* getInstanceGroups(); // Returns the list of instance groups
-	void addCube(InstanceGroup* instanceGroup, const glm::vec3& centre, const glm::vec3& rotation, const glm::vec3& scale, const std::string& name);
+	std::shared_ptr<InstanceGroup> createCubeInstanceGroup(
+		float width = 1.0f, 
+		float height = 1.0f, 
+		float depth = 1.0f, 
+		const glm::vec3& centre = glm::vec3(0.0f), 
+		const std::string& name = "cubes");
+
+	void draw();
 
 private:
-	unsigned int maxID = 0;
+	unsigned int nextId = 0;
 };

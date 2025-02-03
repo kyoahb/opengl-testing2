@@ -135,46 +135,50 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Buffer.inl" />
     <ClCompile Include="dlls\glad.c" />
     <ClCompile Include="files\Camera.cpp" />
-    <ClCompile Include="files\GameObject.cpp" />
     <ClCompile Include="files\Input.cpp" />
-    <ClCompile Include="files\Instance.cpp" />
+    <ClCompile Include="files\InstanceObject.cpp" />
     <ClCompile Include="files\InstanceGroup.cpp" />
     <ClCompile Include="files\Log.cpp" />
     <ClCompile Include="files\Manager.cpp" />
     <ClCompile Include="files\Material.cpp" />
     <ClCompile Include="files\Menu.cpp" />
     <ClCompile Include="files\MenuManager.cpp" />
-    <ClCompile Include="files\ObjectManager.cpp" />
     <ClCompile Include="files\Object.cpp" />
+    <ClCompile Include="files\ObjectManager.cpp" />
+    <ClCompile Include="files\RenderComponent.cpp" />
     <ClCompile Include="files\Renderer.cpp" />
     <ClCompile Include="files\Script.cpp" />
     <ClCompile Include="files\ScriptManager.cpp" />
     <ClCompile Include="files\Texture.cpp" />
     <ClCompile Include="files\TextureManager.cpp" />
+    <ClCompile Include="files\TransformComponent.cpp" />
     <ClCompile Include="files\Useful.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Buffer.h" />
     <ClInclude Include="files\Camera.h" />
-    <ClInclude Include="files\GameObject.h" />
     <ClInclude Include="files\Input.h" />
-    <ClInclude Include="files\Instance.h" />
+    <ClInclude Include="files\InstanceObject.h" />
     <ClInclude Include="files\InstanceGroup.h" />
     <ClInclude Include="files\Log.h" />
     <ClInclude Include="files\Manager.h" />
     <ClInclude Include="files\Material.h" />
     <ClInclude Include="files\Menu.h" />
     <ClInclude Include="files\MenuManager.h" />
-    <ClInclude Include="files\ObjectManager.h" />
     <ClInclude Include="files\Object.h" />
+    <ClInclude Include="files\ObjectManager.h" />
+    <ClInclude Include="files\RenderComponent.h" />
     <ClInclude Include="files\Renderer.h" />
     <ClInclude Include="files\Script.h" />
     <ClInclude Include="files\ScriptManager.h" />
     <ClInclude Include="files\Shader_l.h" />
     <ClInclude Include="files\Texture.h" />
     <ClInclude Include="files\TextureManager.h" />
+    <ClInclude Include="files\TransformComponent.h" />
     <ClInclude Include="files\Useful.h" />
     <ClInclude Include="files\Vertex.h" />
     <ClInclude Include="gamescripts\control.h" />
