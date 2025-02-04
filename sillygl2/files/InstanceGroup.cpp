@@ -110,7 +110,7 @@ void InstanceGroup::batchResendModels() {
 	
 	// Resend
 	//batchBuffer(GL_ARRAY_BUFFER, renderComponent->modelBuffer, matrices, GL_STATIC_DRAW);
-	renderComponent->modelBuffer.bufferData(matrices.size(), matrices, GL_STATIC_DRAW);
+	renderComponent->modelBuffer.bufferData(matrices, GL_STATIC_DRAW);
 }
 
 void InstanceGroup::addInstance(std::shared_ptr<InstanceObject> instance) {

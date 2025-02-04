@@ -32,7 +32,7 @@ void RenderComponent::setVertices(const std::vector<Vertex>& _vertices) {
 	// send data over
 	glBindVertexArray(VAO);
 	//batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
-	VBO.bufferData(vertices.size(), vertices, GL_STATIC_DRAW);
+	VBO.bufferData(vertices, GL_STATIC_DRAW);
 }
 
 void RenderComponent::setIndices(const std::vector<unsigned int>& _indices) {
@@ -50,7 +50,7 @@ void RenderComponent::setIndices(const std::vector<unsigned int>& _indices) {
 
 	glBindVertexArray(VAO);
 	//batchBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
-	EBO.bufferData(indices.size(), indices, GL_STATIC_DRAW);
+	EBO.bufferData(indices, GL_STATIC_DRAW);
 }
 
 void RenderComponent::setMaterial(std::shared_ptr<Material> _material) {
@@ -90,7 +90,7 @@ void RenderComponent::removeVertex(unsigned int index) {
 	// send data over
 	glBindVertexArray(VAO);
 	//batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
-	VBO.bufferData(vertices.size(), vertices, GL_STATIC_DRAW);
+	VBO.bufferData(vertices, GL_STATIC_DRAW);
 }
 
 void RenderComponent::addVertices(const std::vector<Vertex>& _vertices) {
@@ -99,7 +99,7 @@ void RenderComponent::addVertices(const std::vector<Vertex>& _vertices) {
 	// send data over
 	glBindVertexArray(VAO);
 	//batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
-	VBO.bufferData(vertices.size(), vertices, GL_STATIC_DRAW);
+	VBO.bufferData(vertices, GL_STATIC_DRAW);
 }
 
 void RenderComponent::addIndices(const std::vector<unsigned int>& _indices) {
@@ -113,7 +113,7 @@ void RenderComponent::addIndices(const std::vector<unsigned int>& _indices) {
 
 	glBindVertexArray(VAO);
 	//batchBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
-	EBO.bufferData(indices.size(), indices, GL_STATIC_DRAW);
+	EBO.bufferData(indices, GL_STATIC_DRAW);
 }
 
 void RenderComponent::addVerticesIndices(const std::vector<Vertex>& _vertices, const std::vector<unsigned int>& _indices) {
@@ -141,8 +141,8 @@ void RenderComponent::addVerticesIndices(const std::vector<Vertex>& _vertices, c
 	glBindVertexArray(VAO);
 	//batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
 	//batchBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
-	VBO.bufferData(vertices.size(), vertices, GL_STATIC_DRAW);
-	EBO.bufferData(indices.size(), indices, GL_STATIC_DRAW);
+	VBO.bufferData(vertices, GL_STATIC_DRAW);
+	EBO.bufferData(indices, GL_STATIC_DRAW);
 
 }
 
@@ -156,44 +156,12 @@ void RenderComponent::draw() const {
 	glBindVertexArray(VAO);
 
 	modelBuffer.bind();
-
-	// testing
-	// get data from buffers and print out
-	glm::mat4 modelMatrix;
-	glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::mat4), &modelMatrix);
-	mat4Print(modelMatrix);
-
-	for (unsigned int i = 0; i < vertices.size(); i++) {
-		glDrawArrays(GL_POINTS, i, 1);
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO.bufferId);
-
-	// Map the buffer to get a pointer to its data
-	Vertex* vertexData = static_cast<Vertex*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY));
-	if (vertexData) {
-		// Print the vertex data
-		for (size_t i = 0; i < vertices.size(); ++i) {
-			const Vertex& vertex = vertexData[i];
-			spdlog::info("Vertex {}: Position({}, {}, {}), Normal({}, {}, {}), TexCoords({}, {})",
-				i,
-				vertex.position.x, vertex.position.y, vertex.position.z,
-				vertex.normal.x, vertex.normal.y, vertex.normal.z,
-				vertex.texCoords.x, vertex.texCoords.y);
-		}
-	}
-
+	VBO.bind();
 	EBO.bind();
-	// Map the buffer to get a pointer to its data
-	unsigned int* intsData = static_cast<unsigned int*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_ONLY));
-	if (intsData) {
-		// Print the vertex data
-		for (size_t i = 0; i < indices.size(); ++i) {
-			const unsigned int& index = intsData[i];
-			spdlog::info("{} Index: {}", i, index);
-		}
-	}
-
+	
+	std::vector<glm::mat4> modelMatrices = modelBuffer.getBufferData();
+	std::vector<Vertex> bufferVertices = VBO.getBufferData();
+	std::vector<unsigned int> bufferIndices = EBO.getBufferData();
 
 
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -205,11 +173,12 @@ void RenderComponent::setupBuffers() {
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 	//batchBuffer(GL_ARRAY_BUFFER, VBO, vertices, GL_STATIC_DRAW);
-	VBO.bufferData(vertices.size(), vertices, GL_STATIC_DRAW);
+	VBO.bufferData(vertices, GL_STATIC_DRAW);
 
 	// Split VBO into 3 parts: Position, Normal, TexCoords
 	VBO.bind();
 	// Position
+
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0); // Position
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)); // Normal
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords)); // TexCoords
@@ -217,7 +186,7 @@ void RenderComponent::setupBuffers() {
 
 	// Indices setup
 	//batchBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO, indices, GL_STATIC_DRAW);
-	EBO.bufferData(indices.size(), indices, GL_STATIC_DRAW);
+	EBO.bufferData(indices, GL_STATIC_DRAW);
 
 
 	/*
@@ -227,7 +196,7 @@ void RenderComponent::setupBuffers() {
 	*/
 	modelBuffer.bind();
 	glm::mat4 identity = glm::mat4(1.0f);
-	modelBuffer.bufferData(sizeof(glm::mat4), { identity }, GL_STATIC_DRAW); // Send in identity matrix
+	modelBuffer.bufferData({ identity }, GL_STATIC_DRAW); // Send in identity matrix
 
 	// setup matrix as location 3,4,5,6
 	GLsizei vec4Size = (GLsizei)sizeof(glm::vec4);
