@@ -159,9 +159,12 @@ void RenderComponent::draw() const {
 	VBO.bind();
 	EBO.bind();
 	
-	std::vector<glm::mat4> modelMatrices = modelBuffer.getBufferData();
-	std::vector<Vertex> bufferVertices = VBO.getBufferData();
-	std::vector<unsigned int> bufferIndices = EBO.getBufferData();
+	shader->printActiveAttributes();
+	shader->printActiveUniforms();
+
+	//std::vector<glm::mat4> modelMatrices = modelBuffer.getBufferData();
+	//std::vector<Vertex> bufferVertices = VBO.getBufferData();
+	//std::vector<unsigned int> bufferIndices = EBO.getBufferData();
 
 
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

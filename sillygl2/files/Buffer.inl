@@ -63,8 +63,8 @@ void Buffer<T>::resize(unsigned int items) {
 	// Generate new buffer
 	GLuint newBufferId;
 	glGenBuffers(1, &newBufferId);
-	glBindBuffer(GL_ARRAY_BUFFER, newBufferId);
-	glBufferData(GL_ARRAY_BUFFER, items * sizeof(T), nullptr, GL_STATIC_DRAW); // Reserve new data space
+	glBindBuffer(bufferType, newBufferId);
+	glBufferData(bufferType, items * sizeof(T), nullptr, GL_STATIC_DRAW); // Reserve new data space
 
 	// Copy data from the old buffer to the new buffer
 	glBindBuffer(GL_COPY_READ_BUFFER, bufferId);
@@ -78,7 +78,7 @@ void Buffer<T>::resize(unsigned int items) {
 	// Unbind the buffers
 	glBindBuffer(GL_COPY_READ_BUFFER, 0);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(bufferType, 0);
 }
 
 template <typename T>
@@ -88,17 +88,17 @@ std::vector<T> Buffer<T>::getBufferData() const {
 	// Check that the buffer sizes match expected buffer size
 	GLint bufferSize;
 	unsigned int expectedBufferSize = data.size() * sizeof(T);
-	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize);
+	glGetBufferParameteriv(bufferType, GL_BUFFER_SIZE, &bufferSize);
 	//ASSERT_LOG(bufferSize == expectedBufferSize, "Buffer<T> exception when getting buffer data: buffer data does not match expected size"); // Ensure sizes match
 
 	glFinish();
 
-	T* bufferDataPtr = static_cast<T*>(glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY));
+	T* bufferDataPtr = static_cast<T*>(glMapBuffer(bufferType, GL_READ_ONLY));
 	std::vector<T> bufferData;
 	if (bufferDataPtr) {
 		// Initialise vector from data. If data.size() is inaccurate , this will cause a crash
 		bufferData = std::vector<T>(bufferDataPtr, bufferDataPtr + (bufferSize / sizeof(T)));
-		glUnmapBuffer(GL_ARRAY_BUFFER);
+		glUnmapBuffer(bufferType);
 	}
 	return bufferData;
 
