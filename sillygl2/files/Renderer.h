@@ -30,4 +30,8 @@ private:
 	glm::mat4 projection, model; // Projection and Model matrices
     glm::mat4* view; // only initialised if camera is set
 	bool* updatedView;
+
+
+	GLuint VAO;
+	Shader* testShader;
 };

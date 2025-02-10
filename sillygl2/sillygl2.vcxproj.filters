@@ -120,6 +120,9 @@
     <ClCompile Include="files\Renderer.cpp">
       <Filter>Rendering\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="VAOBuffer.cpp">
+      <Filter>Rendering\Buffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="files\Camera.h">
@@ -197,6 +200,9 @@
     <ClInclude Include="files\Buffer.h">
       <Filter>Rendering\Buffer</Filter>
     </ClInclude>
+    <ClInclude Include="files\VAOBuffer.h">
+      <Filter>Rendering\Buffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -215,6 +221,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="files\Buffer.inl">
+      <Filter>Rendering\Buffer</Filter>
+    </None>
+    <None Include="files\VAOBuffer.inl">
       <Filter>Rendering\Buffer</Filter>
     </None>
   </ItemGroup>

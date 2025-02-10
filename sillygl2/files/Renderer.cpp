@@ -90,8 +90,6 @@ void Renderer::preRenderTest() {
 	//blankCube->getRenderComponent()->addVerticesIndices(vertices, indices);
 	//blankCube->getRenderComponent()->getMaterial()->diffuse = TextureManager::defaultTexture(TextureType::Diffuse);
 	//blankCube->getRenderComponent()->setupMaterial();
-
-
 }
 
 void Renderer::renderTest(float deltaTime) {

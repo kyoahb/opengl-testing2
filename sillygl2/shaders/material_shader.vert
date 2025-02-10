@@ -10,13 +10,13 @@ out vec2 TexCoord;
 
 uniform mat4 group = mat4(1.0f);
 layout(std140, binding = 0) uniform Matrices {
-    mat4 view;
-    mat4 projection;
+   mat4 view;
+   mat4 projection;
 };
 
 void main()
 {
-    gl_Position = projection * view * group * model * vec4(aPos, 1.0);
+    gl_Position =  projection * view * group * model * vec4(aPos, 1.0);
     TexCoord = aTexCoord;
     FragPos = aPos;
     Normal = aNormal;

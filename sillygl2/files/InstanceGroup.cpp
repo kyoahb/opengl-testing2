@@ -17,7 +17,7 @@ void InstanceGroup::setupModelBuffer() {
 	}
 
 	// Bind vao
-	glBindVertexArray(renderComponent->VAO);
+	renderComponent->VAO.bind();
 	// Model matrix buffer
 	renderComponent->modelBuffer.bind();
 	glBufferData(GL_ARRAY_BUFFER, modelBufferSize * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW); // reserve matrixBufferSize matrices of space
@@ -36,7 +36,7 @@ void InstanceGroup::draw() {
 	updateInstances();
 
 	// Draw
-	glBindVertexArray(renderComponent->VAO);
+	renderComponent->VAO.bind();
 
 	renderComponent->getShader()->use();
 	renderComponent->getMaterial()->use();
@@ -140,7 +140,7 @@ void InstanceGroup::resizeModelBuffer() {
 		return;
 	}
 
-	glBindVertexArray(renderComponent->VAO);
+	renderComponent->VAO.bind();
 	modelBufferSize += modelBufferIncrement;
 
 	// Generate new buffer

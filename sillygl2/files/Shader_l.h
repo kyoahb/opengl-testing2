@@ -133,6 +133,17 @@ public:
         return location;
 	}
 
+    template <typename T>
+	T getUniform(const std::string& name) const {
+		if (!isShaderBound()) {
+			use();
+		}
+		GLuint location = getLocation(name.c_str());
+		T value;
+		glGetUniformfv(ID, location, glm::value_ptr(value));
+		return value;
+	}
+
     // utility uniform functions.
     // All require shader to be bound.
     // ------------------------------------------------------------------------

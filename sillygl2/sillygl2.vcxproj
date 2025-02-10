@@ -156,6 +156,7 @@
     <ClCompile Include="files\TransformComponent.cpp" />
     <ClCompile Include="files\Useful.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="VAOBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="files\Buffer.h" />
@@ -179,6 +180,7 @@
     <ClInclude Include="files\TextureManager.h" />
     <ClInclude Include="files\TransformComponent.h" />
     <ClInclude Include="files\Useful.h" />
+    <ClInclude Include="files\VAOBuffer.h" />
     <ClInclude Include="files\Vertex.h" />
     <ClInclude Include="gamescripts\control.h" />
     <ClInclude Include="gamescripts\engine.h" />
@@ -186,6 +188,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="files\Buffer.inl" />
+    <None Include="files\VAOBuffer.inl" />
     <None Include="shaders\instance_shader.vert" />
     <None Include="shaders\material_shader.frag" />
     <None Include="shaders\material_shader.vert" />

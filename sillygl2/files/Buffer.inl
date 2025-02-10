@@ -7,6 +7,7 @@ template <typename T>
 Buffer<T>::Buffer(GLenum _bufferType, std::string _name) : bufferType(_bufferType), name(_name) {
 	// Create buffer
 	glGenBuffers(1, &bufferId);
+	size.push_back((unsigned int)sizeof(T)); // The buffer size is the size of the type, not separated by anything
 }
 
 template <typename T>
@@ -43,7 +44,7 @@ void Buffer<T>::bufferData(const std::vector<T>& _data, GLenum usage) {
 
 template <typename T>
 void Buffer<T>::bufferSubData(size_t offset, const T* _data) {
-	spdlog::info("Sub-buffering data of size {}, name {}", _data.size(), name);
+	spdlog::info("Sub-buffering data of size {}, name {}", sizeof(T), name);
 	bind();
 	
 	// Insert data into the buffer at appropriate index
@@ -82,14 +83,21 @@ void Buffer<T>::resize(unsigned int items) {
 }
 
 template <typename T>
+GLint Buffer<T>::getBufferSize() const {
+	bind();
+	GLint bufferSize;
+	glGetBufferParameteriv(bufferType, GL_BUFFER_SIZE, &bufferSize);
+	return bufferSize;
+}
+
+template <typename T>
 std::vector<T> Buffer<T>::getBufferData() const {
 	bind();
 
 	// Check that the buffer sizes match expected buffer size
-	GLint bufferSize;
+	GLint bufferSize = getBufferSize();
 	unsigned int expectedBufferSize = data.size() * sizeof(T);
-	glGetBufferParameteriv(bufferType, GL_BUFFER_SIZE, &bufferSize);
-	//ASSERT_LOG(bufferSize == expectedBufferSize, "Buffer<T> exception when getting buffer data: buffer data does not match expected size"); // Ensure sizes match
+	ASSERT_LOG(bufferSize == expectedBufferSize, "Buffer<T> exception when getting buffer data: buffer data does not match expected size"); // Ensure sizes match
 
 	glFinish();
 
@@ -108,6 +116,12 @@ template <typename T>
 const std::vector<T>& Buffer<T>::getData() const {
 	return data;
 }
+
+template <typename T>
+const std::string& Buffer<T>::getName() const {
+	return name;
+}
+
 
 
 #endif
